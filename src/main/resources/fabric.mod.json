@@ -1,0 +1,43 @@
+{
+	"schemaVersion": 1,
+	"id": "inventory_toolkit",
+	"version": "${version}",
+	"name": "Inventory Toolkit",
+	"description": "Hotbar loadouts, automatic stack refills, and safe inventory sweeping in one client-side mod.",
+	"authors": [
+		"Luka"
+	],
+	"license": "All-Rights-Reserved",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.luka.inventorytoolkit.InventoryToolkitClient"
+		],
+		"modmenu": [
+			"dev.luka.inventorytoolkit.config.InventoryToolkitModMenu"
+		]
+	},
+	"mixins": [
+		{
+			"config": "stack_refill.client.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "inventory_sweeper.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": ">=0.155.2",
+		"modmenu": ">=20.0.1",
+		"cloth-config": ">=26.2.155"
+	},
+	"breaks": {
+		"stack_refill": "*",
+		"smart_hotbar_loadouts": "*",
+		"inventory_sweeper": "*"
+	}
+}

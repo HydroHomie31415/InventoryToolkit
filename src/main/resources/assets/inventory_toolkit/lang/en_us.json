@@ -1,0 +1,16 @@
+{
+	"key.category.inventory_toolkit.controls": "Inventory Toolkit",
+	"key.categories.inventory_toolkit.controls": "Inventory Toolkit",
+	"key.inventory_toolkit.configure": "Open Inventory Toolkit Settings",
+	"screen.inventory_toolkit.title": "Inventory Toolkit",
+	"screen.inventory_toolkit.subtitle": "Choose a module to configure",
+	"screen.inventory_toolkit.loadouts": "Hotbar Loadouts",
+	"screen.inventory_toolkit.loadouts.description": "Build and apply rule-based hotbar presets.",
+	"screen.inventory_toolkit.refill": "Stack Refill",
+	"screen.inventory_toolkit.refill.description": "Automatically replace or top up used stacks.",
+	"screen.inventory_toolkit.sweeper": "Inventory Sweeper",
+	"screen.inventory_toolkit.sweeper.description": "Drop newly collected items using safe rules.",
+	"screen.inventory_toolkit.done": "Done",
+	"message.inventory_toolkit.busy": "Inventory Toolkit is finishing another inventory action. Try again.",
+	"modmenu.descriptionTranslation.inventory_toolkit": "Hotbar loadouts, automatic stack refills, and safe inventory sweeping in one client-side toolkit."
+}
