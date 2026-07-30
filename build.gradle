@@ -74,6 +74,7 @@ tasks.register("installToPandora", Copy) {
 		delete fileTree(pandoraModsDirectory) {
 			include "${project.archive_base_name}-*.jar"
 			include "shift-drag-transfer-*.jar"
+			include "offhandswapper-*.jar"
 		}
 	}
 }

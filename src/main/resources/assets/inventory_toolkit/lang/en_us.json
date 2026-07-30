@@ -6,6 +6,8 @@
 	"screen.inventory_toolkit.subtitle": "Choose a module to configure",
 	"screen.inventory_toolkit.loadouts": "Hotbar Loadouts",
 	"screen.inventory_toolkit.loadouts.description": "Build and apply rule-based hotbar presets.",
+	"screen.inventory_toolkit.offhand_swapper": "OffhandSwapper",
+	"screen.inventory_toolkit.offhand_swapper.description": "Open a secondary hotbar and quickly swap an item into your offhand.",
 	"screen.inventory_toolkit.transfers": "Shift Drag Transfer",
 	"screen.inventory_toolkit.transfers.description": "Configure drag and scroll-wheel inventory transfers.",
 	"screen.inventory_toolkit.refill": "Stack Refill",
@@ -16,5 +18,5 @@
 	"screen.inventory_toolkit.sweeper.description": "Drop newly collected items using safe rules.",
 	"screen.inventory_toolkit.done": "Done",
 	"message.inventory_toolkit.busy": "Inventory Toolkit is finishing another inventory action. Try again.",
-	"modmenu.descriptionTranslation.inventory_toolkit": "Configurable inventory transfers, hotbar loadouts, bundle routing, automatic stack refills, and safe inventory sweeping."
+	"modmenu.descriptionTranslation.inventory_toolkit": "Configurable inventory transfers, hotbar loadouts, offhand swapping, bundle routing, automatic stack refills, and safe inventory sweeping."
 }

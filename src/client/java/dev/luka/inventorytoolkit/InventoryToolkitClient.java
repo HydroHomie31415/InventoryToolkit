@@ -1,5 +1,6 @@
 package dev.luka.inventorytoolkit;
 
+import be.luka.quickoffhand.QuickOffhandClient;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.hydro.hydrosbundles.HydrosBundlesClient;
 import dev.inventorysweeper.InventorySweeperClient;
@@ -42,9 +43,10 @@ public final class InventoryToolkitClient implements ClientModInitializer {
 			}
 		});
 
-		// User-requested loadouts have first priority, followed by bundle
-		// routing, refills, and finally automatic sweeping.
+		// User-requested loadouts and offhand swaps have first priority,
+		// followed by bundle routing, refills, and automatic sweeping.
 		new SmartHotbarClient().onInitializeClient();
+		new QuickOffhandClient().onInitializeClient();
 		new HydrosBundlesClient().onInitializeClient();
 		new StackRefillClient().onInitializeClient();
 		new InventorySweeperClient().onInitializeClient();

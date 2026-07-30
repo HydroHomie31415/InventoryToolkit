@@ -3,7 +3,7 @@
 	"id": "inventory_toolkit",
 	"version": "${version}",
 	"name": "Inventory Toolkit",
-	"description": "Configurable inventory transfers, hotbar loadouts, bundle routing, stack refills, and safe inventory sweeping.",
+	"description": "Configurable inventory transfers, hotbar loadouts, offhand swapping, bundle routing, stack refills, and safe inventory sweeping.",
 	"authors": [
 		"Hydro",
 		"Luka"
@@ -30,6 +30,10 @@
 		{
 			"config": "shift_drag_transfer.client.mixins.json",
 			"environment": "client"
+		},
+		{
+			"config": "quickoffhand.client.mixins.json",
+			"environment": "client"
 		}
 	],
 	"depends": {
@@ -45,6 +49,7 @@
 		"smart_hotbar_loadouts": "*",
 		"inventory_sweeper": "*",
 		"hydros_bundles": "*",
-		"shift_drag_transfer": "*"
+		"shift_drag_transfer": "*",
+		"quickoffhand": "*"
 	}
 }
