@@ -3,7 +3,7 @@
 	"id": "inventory_toolkit",
 	"version": "${version}",
 	"name": "Inventory Toolkit",
-	"description": "Hotbar loadouts, bundle routing, automatic stack refills, and safe inventory sweeping in one client-side mod.",
+	"description": "Configurable inventory transfers, hotbar loadouts, bundle routing, stack refills, and safe inventory sweeping.",
 	"authors": [
 		"Hydro",
 		"Luka"
@@ -26,6 +26,10 @@
 		{
 			"config": "inventory_sweeper.client.mixins.json",
 			"environment": "client"
+		},
+		{
+			"config": "shift_drag_transfer.client.mixins.json",
+			"environment": "client"
 		}
 	],
 	"depends": {
@@ -40,6 +44,7 @@
 		"stack_refill": "*",
 		"smart_hotbar_loadouts": "*",
 		"inventory_sweeper": "*",
-		"hydros_bundles": "*"
+		"hydros_bundles": "*",
+		"shift_drag_transfer": "*"
 	}
 }

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.hydro.hydrosbundles.HydrosBundlesClient;
 import dev.inventorysweeper.InventorySweeperClient;
 import dev.luka.inventorytoolkit.config.InventoryToolkitScreen;
+import dev.luka.shiftdragtransfer.ShiftDragTransferClient;
 import dev.luka.smarthotbar.SmartHotbarClient;
 import dev.luka.stackrefill.StackRefillClient;
 import net.fabricmc.api.ClientModInitializer;
@@ -47,6 +48,7 @@ public final class InventoryToolkitClient implements ClientModInitializer {
 		new HydrosBundlesClient().onInitializeClient();
 		new StackRefillClient().onInitializeClient();
 		new InventorySweeperClient().onInitializeClient();
+		new ShiftDragTransferClient().onInitializeClient();
 
 		LOGGER.info("Inventory Toolkit initialized");
 	}

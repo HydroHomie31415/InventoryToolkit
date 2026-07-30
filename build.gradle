@@ -58,6 +58,30 @@ java {
 	targetCompatibility = JavaVersion.VERSION_25
 }
 
+def pandoraModsDirectory =
+		file("/home/luka/.local/share/PandoraLauncher/instances/26.2/.minecraft/mods")
+
+tasks.register("installToPandora", Copy) {
+	group = "distribution"
+	description = "Installs Inventory Toolkit into the PandoraLauncher 26.2 instance."
+	dependsOn tasks.named("jar")
+
+	from tasks.named("jar").flatMap { it.archiveFile }
+	into pandoraModsDirectory
+
+	doFirst {
+		pandoraModsDirectory.mkdirs()
+		delete fileTree(pandoraModsDirectory) {
+			include "${project.archive_base_name}-*.jar"
+			include "shift-drag-transfer-*.jar"
+		}
+	}
+}
+
+tasks.named("build") {
+	finalizedBy tasks.named("installToPandora")
+}
+
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {

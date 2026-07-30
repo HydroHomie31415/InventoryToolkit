@@ -10,6 +10,7 @@ public final class InventoryActionCoordinator {
 	public static final String HYDROS_BUNDLES = "hydros_bundles";
 	public static final String STACK_REFILL = "stack_refill";
 	public static final String SWEEPER = "sweeper";
+	public static final String SHIFT_DRAG_TRANSFER = "shift_drag_transfer";
 
 	private static String owner;
 
@@ -30,5 +31,9 @@ public final class InventoryActionCoordinator {
 		}
 		owner = module;
 		return true;
+	}
+
+	public static void claimManual(String module) {
+		owner = module;
 	}
 }
