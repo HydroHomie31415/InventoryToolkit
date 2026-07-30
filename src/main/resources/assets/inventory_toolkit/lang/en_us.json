@@ -8,9 +8,11 @@
 	"screen.inventory_toolkit.loadouts.description": "Build and apply rule-based hotbar presets.",
 	"screen.inventory_toolkit.refill": "Stack Refill",
 	"screen.inventory_toolkit.refill.description": "Automatically replace or top up used stacks.",
+	"screen.inventory_toolkit.bundles": "Hydro'sBundles",
+	"screen.inventory_toolkit.bundles.description": "Route items into named bundles and browse their contents.",
 	"screen.inventory_toolkit.sweeper": "Inventory Sweeper",
 	"screen.inventory_toolkit.sweeper.description": "Drop newly collected items using safe rules.",
 	"screen.inventory_toolkit.done": "Done",
 	"message.inventory_toolkit.busy": "Inventory Toolkit is finishing another inventory action. Try again.",
-	"modmenu.descriptionTranslation.inventory_toolkit": "Hotbar loadouts, automatic stack refills, and safe inventory sweeping in one client-side toolkit."
+	"modmenu.descriptionTranslation.inventory_toolkit": "Hotbar loadouts, bundle routing, automatic stack refills, and safe inventory sweeping in one client-side toolkit."
 }

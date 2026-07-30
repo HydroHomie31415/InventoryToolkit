@@ -1,9 +1,11 @@
 # Inventory Toolkit
 
-Inventory Toolkit combines three client-side Fabric inventory quality-of-life
+Inventory Toolkit combines four client-side Fabric inventory quality-of-life
 mods for Minecraft 26.2:
 
 - **Hotbar Loadouts** — five configurable, rule-based hotbar presets.
+- **Hydro'sBundles** — routes items into named bundles and provides a complete
+  browser for bundle contents.
 - **Stack Refill** — replaces or tops up a used stack after successful block
   placement.
 - **Inventory Sweeper** — safely drops newly acquired items that match
@@ -23,18 +25,19 @@ Existing settings are imported automatically because the combined mod continues
 to use the original configuration files:
 
 - `config/smart-hotbar-loadouts.json`
+- `config/hydros-bundles.json`
 - `config/stack-refill.json`
 - `config/inventory-sweeper.json`
 
-The three standalone JARs must be removed before installing Inventory Toolkit.
+The four standalone JARs must be removed before installing Inventory Toolkit.
 Fabric will report them as incompatible if they are accidentally installed
 together, preventing duplicate initializers and inventory actions.
 
 ## Safety and coordination
 
 The modules share an inventory-action coordinator. During a client tick, manual
-loadout actions take priority over stack refills, and refills take priority over
-automatic sweeping. Pending automatic work waits for the next available tick.
+loadout actions take priority over bundle routing, followed by stack refills and
+automatic sweeping. Pending work waits for the next available tick.
 
 Inventory Sweeper retains its safe defaults: it starts disabled and only drops
 matching amounts gained after its baseline was established.
@@ -55,4 +58,4 @@ matching amounts gained after its baseline was established.
 ```
 
 The distributable JAR is written to
-`build/libs/inventory-toolkit-1.0.0.jar`.
+`build/libs/inventory-toolkit-1.1.0.jar`.

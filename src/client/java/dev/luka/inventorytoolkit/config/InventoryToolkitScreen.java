@@ -1,5 +1,6 @@
 package dev.luka.inventorytoolkit.config;
 
+import dev.hydro.hydrosbundles.config.HydrosBundlesSettingsScreen;
 import dev.inventorysweeper.config.SweeperConfigScreen;
 import dev.luka.smarthotbar.LoadoutScreen;
 import dev.luka.smarthotbar.SmartHotbarClient;
@@ -13,7 +14,7 @@ import net.minecraft.network.chat.Component;
 public final class InventoryToolkitScreen extends Screen {
 	private static final int BUTTON_WIDTH = 220;
 	private static final int BUTTON_HEIGHT = 24;
-	private static final int GAP = 16;
+	private static final int GAP = 10;
 
 	private final Screen parent;
 
@@ -24,7 +25,7 @@ public final class InventoryToolkitScreen extends Screen {
 
 	@Override
 	protected void init() {
-		int firstY = Math.max(52, height / 2 - 60);
+		int firstY = Math.max(48, height / 2 - 76);
 
 		addModuleButton(
 			firstY,
@@ -40,6 +41,12 @@ public final class InventoryToolkitScreen extends Screen {
 		);
 		addModuleButton(
 			firstY + (BUTTON_HEIGHT + GAP) * 2,
+			"screen.inventory_toolkit.bundles",
+			"screen.inventory_toolkit.bundles.description",
+			button -> minecraft.gui.setScreen(new HydrosBundlesSettingsScreen(this))
+		);
+		addModuleButton(
+			firstY + (BUTTON_HEIGHT + GAP) * 3,
 			"screen.inventory_toolkit.sweeper",
 			"screen.inventory_toolkit.sweeper.description",
 			button -> minecraft.gui.setScreen(SweeperConfigScreen.create(this))
@@ -48,7 +55,7 @@ public final class InventoryToolkitScreen extends Screen {
 		addRenderableWidget(Button.builder(
 			Component.translatable("screen.inventory_toolkit.done"),
 			button -> onClose()
-		).bounds(width / 2 - 70, firstY + (BUTTON_HEIGHT + GAP) * 3 + 8, 140, 20).build());
+		).bounds(width / 2 - 70, firstY + (BUTTON_HEIGHT + GAP) * 4 + 8, 140, 20).build());
 	}
 
 	private void addModuleButton(

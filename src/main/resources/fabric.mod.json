@@ -3,8 +3,9 @@
 	"id": "inventory_toolkit",
 	"version": "${version}",
 	"name": "Inventory Toolkit",
-	"description": "Hotbar loadouts, automatic stack refills, and safe inventory sweeping in one client-side mod.",
+	"description": "Hotbar loadouts, bundle routing, automatic stack refills, and safe inventory sweeping in one client-side mod.",
 	"authors": [
+		"Hydro",
 		"Luka"
 	],
 	"license": "All-Rights-Reserved",
@@ -38,6 +39,7 @@
 	"breaks": {
 		"stack_refill": "*",
 		"smart_hotbar_loadouts": "*",
-		"inventory_sweeper": "*"
+		"inventory_sweeper": "*",
+		"hydros_bundles": "*"
 	}
 }

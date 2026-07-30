@@ -7,6 +7,7 @@ package dev.luka.inventorytoolkit;
  */
 public final class InventoryActionCoordinator {
 	public static final String LOADOUTS = "loadouts";
+	public static final String HYDROS_BUNDLES = "hydros_bundles";
 	public static final String STACK_REFILL = "stack_refill";
 	public static final String SWEEPER = "sweeper";
 
