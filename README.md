@@ -1,6 +1,6 @@
 # Inventory Toolkit
 
-Inventory Toolkit combines six client-side Fabric inventory quality-of-life
+Inventory Toolkit combines eight client-side Fabric inventory quality-of-life
 mods for Minecraft 26.2:
 
 - **Shift Drag Transfer** — quick-moves dragged stacks and transfers precise
@@ -8,12 +8,19 @@ mods for Minecraft 26.2:
 - **Hotbar Loadouts** — five configurable, rule-based hotbar presets.
 - **OffhandSwapper** — opens a configurable secondary hotbar for quickly
   swapping inventory items into the offhand.
+- **Auto Tool Switch** — selects the best eligible hotbar tool before mining,
+  with configurable activation, tool and slot eligibility, harvest and
+  enchantment priorities, durability protection, block/item ID or tag rules,
+  and optional return to the previous slot.
 - **Hydro'sBundles** — routes items into named bundles and provides a complete
   browser for bundle contents.
 - **Stack Refill** — replaces or tops up a used stack after successful block
   placement.
 - **Inventory Sweeper** — safely drops newly acquired items that match
   configurable presets or item rules.
+- **Hydro's Recipe Book** — shows every locally known recipe in the vanilla
+  recipe-book interface, ungroups recipes, keeps persistent favorites with
+  gold star indicators, and supports right-click or Shift-right-click crafting.
 
 The modules use ordinary vanilla inventory actions and work on multiplayer
 servers without a server-side installation.
@@ -34,8 +41,17 @@ to use the original configuration files:
 - `config/stack-refill.json`
 - `config/inventory-sweeper.json`
 - `config/shift-drag-transfer.json`
+- `config/hydros-recipe-book.json`
+- `config/inventory-toolkit-recipe-book.json`
+- `config/inventory-toolkit-auto-tool-switch.json`
 
-The six standalone JARs must be removed before installing Inventory Toolkit.
+The `inventory-toolkit-recipe-book.json` file contains the master Recipe Book
+Enhancements switch. It is also available in **Inventory Toolkit Settings →
+Recipe Book Enhancements**; turning it off restores the vanilla recipe-book
+interface and interactions. Auto Tool Switch settings use the final file in
+the list.
+
+The standalone JARs must be removed before installing Inventory Toolkit.
 Fabric will report them as incompatible if they are accidentally installed
 together, preventing duplicate initializers and inventory actions.
 
@@ -65,6 +81,6 @@ matching amounts gained after its baseline was established.
 ```
 
 The distributable JAR is written to
-`build/libs/inventory-toolkit-1.3.0.jar`. Every build also installs it into the
+`build/libs/inventory-toolkit-1.5.0.jar`. Every build also installs it into the
 PandoraLauncher 26.2 instance and removes older Toolkit, standalone Shift Drag
-Transfer, and standalone OffhandSwapper JARs.
+Transfer, standalone OffhandSwapper, and standalone Hydro's Recipe Book JARs.

@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "dev.hydro.hydrosrecipebook.mixin.client",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"ClientPacketListenerAccessor",
+		"ClientRecipeBookMixin",
+		"ClientRecipeBookAccessor",
+		"RecipeBookComponentMixin",
+		"RecipeBookPageMixin",
+		"RecipeButtonMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

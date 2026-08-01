@@ -3,7 +3,7 @@
 	"id": "inventory_toolkit",
 	"version": "${version}",
 	"name": "Inventory Toolkit",
-	"description": "Configurable inventory transfers, hotbar loadouts, offhand swapping, bundle routing, stack refills, and safe inventory sweeping.",
+	"description": "A complete inventory toolkit with better recipes, automatic tool switching, transfers, loadouts, offhand swapping, bundle routing, stack refills, and sweeping.",
 	"authors": [
 		"Hydro",
 		"Luka"
@@ -34,6 +34,10 @@
 		{
 			"config": "quickoffhand.client.mixins.json",
 			"environment": "client"
+		},
+		{
+			"config": "hydros_recipe_book.client.mixins.json",
+			"environment": "client"
 		}
 	],
 	"depends": {
@@ -49,6 +53,7 @@
 		"smart_hotbar_loadouts": "*",
 		"inventory_sweeper": "*",
 		"hydros_bundles": "*",
+		"hydros_recipe_book": "*",
 		"shift_drag_transfer": "*",
 		"quickoffhand": "*"
 	}

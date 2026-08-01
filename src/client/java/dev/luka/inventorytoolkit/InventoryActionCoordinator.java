@@ -12,6 +12,7 @@ public final class InventoryActionCoordinator {
 	public static final String STACK_REFILL = "stack_refill";
 	public static final String SWEEPER = "sweeper";
 	public static final String SHIFT_DRAG_TRANSFER = "shift_drag_transfer";
+	public static final String RECIPE_BOOK = "recipe_book";
 
 	private static String owner;
 

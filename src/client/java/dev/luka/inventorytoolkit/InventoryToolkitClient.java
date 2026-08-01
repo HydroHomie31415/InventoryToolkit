@@ -3,7 +3,9 @@ package dev.luka.inventorytoolkit;
 import be.luka.quickoffhand.QuickOffhandClient;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.hydro.hydrosbundles.HydrosBundlesClient;
+import dev.hydro.hydrosrecipebook.HydrosRecipeBookClient;
 import dev.inventorysweeper.InventorySweeperClient;
+import dev.luka.inventorytoolkit.autotool.AutoToolSwitchClient;
 import dev.luka.inventorytoolkit.config.InventoryToolkitScreen;
 import dev.luka.shiftdragtransfer.ShiftDragTransferClient;
 import dev.luka.smarthotbar.SmartHotbarClient;
@@ -43,8 +45,11 @@ public final class InventoryToolkitClient implements ClientModInitializer {
 			}
 		});
 
-		// User-requested loadouts and offhand swaps have first priority,
-		// followed by bundle routing, refills, and automatic sweeping.
+		AutoToolSwitchClient.initialize();
+
+		// User-requested recipe actions, loadouts, and offhand swaps have first
+		// priority, followed by bundle routing, refills, and automatic sweeping.
+		new HydrosRecipeBookClient().onInitializeClient();
 		new SmartHotbarClient().onInitializeClient();
 		new QuickOffhandClient().onInitializeClient();
 		new HydrosBundlesClient().onInitializeClient();

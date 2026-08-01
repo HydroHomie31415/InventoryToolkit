@@ -75,6 +75,7 @@ tasks.register("installToPandora", Copy) {
 			include "${project.archive_base_name}-*.jar"
 			include "shift-drag-transfer-*.jar"
 			include "offhandswapper-*.jar"
+			include "hydros-recipe-book-*.jar"
 		}
 	}
 }
