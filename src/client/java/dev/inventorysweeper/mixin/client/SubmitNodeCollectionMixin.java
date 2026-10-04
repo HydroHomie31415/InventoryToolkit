@@ -47,8 +47,10 @@ public abstract class SubmitNodeCollectionMixin {
 				material.sprite(),
 				material.layer(),
 				renderType,
+				material.itemGlintRenderType(),
+				material.itemGlintSpecialRenderType(),
 				tintIndex,
-				material.shade(),
+				material.shadeDirectionOverride(),
 				material.lightEmission()
 			);
 			translucentQuads.add(new BakedQuad(

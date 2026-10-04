@@ -1,10 +1,22 @@
 # Inventory Toolkit
 
-Inventory Toolkit combines eight client-side Fabric inventory quality-of-life
-mods for Minecraft 26.2:
+Inventory Toolkit combines ten client-side Fabric inventory quality-of-life
+mods for Minecraft 26.3:
 
 - **Shift Drag Transfer** — quick-moves dragged stacks and transfers precise
   item amounts with the scroll wheel.
+- **Container Quick Stack** — one key deposits your items into every chest,
+  barrel, and shulker box within reach that already holds them, opening each
+  container without showing its screen; the inventory screen has a button for
+  it too and stays open while it runs. Inside an open container (including
+  hoppers and dispensers), a header button or the same key quick stacks into
+  just that container.
+- **Container Search** — remembers what every chest, barrel, and shulker box
+  you open, quick stack into, or scan holds (including items inside stored
+  shulker boxes and bundles), and searches all of it by item name or ID.
+  Picking a result, or Alt+clicking an item in any inventory screen, outlines
+  the containers holding it through walls. **Scan Nearby**
+  refreshes every container within reach without showing their screens.
 - **Hotbar Loadouts** — five configurable, rule-based hotbar presets.
 - **OffhandSwapper** — opens a configurable secondary hotbar for quickly
   swapping inventory items into the offhand.
@@ -44,12 +56,16 @@ to use the original configuration files:
 - `config/hydros-recipe-book.json`
 - `config/inventory-toolkit-recipe-book.json`
 - `config/inventory-toolkit-auto-tool-switch.json`
+- `config/inventory-toolkit-quick-stack.json`
 
 The `inventory-toolkit-recipe-book.json` file contains the master Recipe Book
 Enhancements switch. It is also available in **Inventory Toolkit Settings →
 Recipe Book Enhancements**; turning it off restores the vanilla recipe-book
-interface and interactions. Auto Tool Switch settings use the final file in
-the list.
+interface and interactions. Auto Tool Switch settings use
+`inventory-toolkit-auto-tool-switch.json`; Container Quick Stack and Container
+Search share `inventory-toolkit-quick-stack.json`. Remembered container
+contents are stored separately for each world and server under
+`inventory-toolkit/container-memory/` in the game directory.
 
 The standalone JARs must be removed before installing Inventory Toolkit.
 Fabric will report them as incompatible if they are accidentally installed
@@ -67,11 +83,11 @@ matching amounts gained after its baseline was established.
 
 ## Requirements
 
-- Minecraft Java Edition 26.2
+- Minecraft Java Edition 26.3
 - Fabric Loader 0.19.3 or newer
-- Fabric API 0.155.2+26.2 or newer
-- Mod Menu 20.0.1 or newer
-- Cloth Config 26.2.155 or newer
+- Fabric API 0.161.0+26.3 or newer
+- Mod Menu 21.0.0 or newer
+- Cloth Config 26.3.159 or newer
 - Java 25
 
 ## Build
@@ -82,5 +98,5 @@ matching amounts gained after its baseline was established.
 
 The distributable JAR is written to
 `build/libs/inventory-toolkit-1.5.0.jar`. Every build also installs it into the
-PandoraLauncher 26.2 instance and removes older Toolkit, standalone Shift Drag
+PandoraLauncher 26.3 instance and removes older Toolkit, standalone Shift Drag
 Transfer, standalone OffhandSwapper, and standalone Hydro's Recipe Book JARs.

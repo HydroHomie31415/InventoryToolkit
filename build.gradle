@@ -59,11 +59,11 @@ java {
 }
 
 def pandoraModsDirectory =
-		file("/home/luka/.local/share/PandoraLauncher/instances/26.2/.minecraft/mods")
+		file("/home/luka/.local/share/PandoraLauncher/instances/26.3/.minecraft/mods")
 
 tasks.register("installToPandora", Copy) {
 	group = "distribution"
-	description = "Installs Inventory Toolkit into the PandoraLauncher 26.2 instance."
+	description = "Installs Inventory Toolkit into the PandoraLauncher 26.3 instance."
 	dependsOn tasks.named("jar")
 
 	from tasks.named("jar").flatMap { it.archiveFile }

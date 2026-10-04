@@ -161,8 +161,8 @@ public final class ShiftDragTransferConfig {
 				int firstKey,
 				int secondKey
 		) {
-			return InputConstants.isKeyDown(minecraft.getWindow(), firstKey)
-				|| InputConstants.isKeyDown(minecraft.getWindow(), secondKey);
+			return InputConstants.isKeyDown(firstKey)
+				|| InputConstants.isKeyDown(secondKey);
 		}
 	}
 

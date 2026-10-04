@@ -1,5 +1,6 @@
 package dev.hydro.hydrosrecipebook;
 
+import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.hydro.hydrosrecipebook.mixin.client.ClientPacketListenerAccessor;
 import dev.hydro.hydrosrecipebook.mixin.client.ClientRecipeBookAccessor;
@@ -8,11 +9,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
@@ -20,6 +23,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.core.registries.Registries;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,20 +119,25 @@ public final class LocalRecipeCatalog {
 			List<PackResources> packs = new ArrayList<>(
 				minecraft.getResourceManager().listPacks().toList()
 			);
-			if (packs.stream().noneMatch(pack -> pack == minecraft.getVanillaPackResources())) {
-				packs.addFirst(minecraft.getVanillaPackResources());
+			PackResources vanilla = minecraft.getVanillaPackResources().fullResources();
+			if (packs.stream().noneMatch(pack -> pack == vanilla)) {
+				packs.addFirst(vanilla);
 			}
 
 			MultiPackResourceManager resources =
 				new MultiPackResourceManager(PackType.SERVER_DATA, packs);
 			Map<Identifier, Recipe<?>> decoded = new TreeMap<>();
-			SimpleJsonResourceReloadListener.scanDirectory(
-				resources,
-				RECIPE_FILES,
-				connection.registryAccess().createSerializationContext(JsonOps.INSTANCE),
-				Recipe.CODEC,
-				decoded
-			);
+			RegistryOps<JsonElement> ops =
+				connection.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+			for (Map.Entry<Identifier, Resource> file : RECIPE_FILES.listMatchingResources(resources).entrySet()) {
+				Identifier id = RECIPE_FILES.fileToId(file.getKey());
+				try (BufferedReader reader = file.getValue().openAsReader()) {
+					Recipe.CODEC.parse(ops, StrictJsonParser.parse(reader))
+						.ifSuccess(recipe -> decoded.put(id, recipe.value()));
+				} catch (Exception exception) {
+					// Skip unreadable or malformed recipe files, like vanilla does.
+				}
+			}
 
 			int nextSyntheticId = -1;
 			for (Map.Entry<Identifier, Recipe<?>> decodedRecipe : decoded.entrySet()) {

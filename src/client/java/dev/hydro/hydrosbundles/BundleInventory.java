@@ -33,7 +33,7 @@ public final class BundleInventory {
 		if (!isBundle(bundle) || candidate.isEmpty() || !BundleContents.canItemBeInBundle(candidate)) {
 			return false;
 		}
-		BundleContents.Mutable simulated = new BundleContents.Mutable(contents(bundle));
+		BundleContents.Mutable simulated = contents(bundle).asMutable();
 		return simulated.tryInsert(candidate.copy()) > 0;
 	}
 

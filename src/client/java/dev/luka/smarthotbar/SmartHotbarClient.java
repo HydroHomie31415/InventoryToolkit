@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +22,14 @@ public final class SmartHotbarClient implements ClientModInitializer {
 
         KeyMapping apply = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.smart_hotbar_loadouts.apply",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_R,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_R,
                 category
         ));
         KeyMapping configure = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.smart_hotbar_loadouts.configure",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_O,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_O,
                 category
         ));
 

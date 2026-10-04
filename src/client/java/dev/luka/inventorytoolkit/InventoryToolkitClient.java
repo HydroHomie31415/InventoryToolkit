@@ -7,6 +7,7 @@ import dev.hydro.hydrosrecipebook.HydrosRecipeBookClient;
 import dev.inventorysweeper.InventorySweeperClient;
 import dev.luka.inventorytoolkit.autotool.AutoToolSwitchClient;
 import dev.luka.inventorytoolkit.config.InventoryToolkitScreen;
+import dev.luka.inventorytoolkit.quickstack.QuickStackClient;
 import dev.luka.shiftdragtransfer.ShiftDragTransferClient;
 import dev.luka.smarthotbar.SmartHotbarClient;
 import dev.luka.stackrefill.StackRefillClient;
@@ -30,7 +31,7 @@ public final class InventoryToolkitClient implements ClientModInitializer {
 		keyCategory = KeyMapping.Category.register(id("controls"));
 		configureKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.inventory_toolkit.configure",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			keyCategory
 		));
@@ -46,6 +47,7 @@ public final class InventoryToolkitClient implements ClientModInitializer {
 		});
 
 		AutoToolSwitchClient.initialize();
+		QuickStackClient.initialize();
 
 		// User-requested recipe actions, loadouts, and offhand swaps have first
 		// priority, followed by bundle routing, refills, and automatic sweeping.

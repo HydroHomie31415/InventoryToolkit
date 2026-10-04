@@ -42,8 +42,8 @@ public final class QuickOffhandClient implements ClientModInitializer {
    public void onInitializeClient() {
       ensureConfigLoaded();
       KeyMapping.Category category = InventoryToolkitClient.keyCategory();
-      openSelectorKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_selector", Type.KEYSYM, 342, category));
-      openSettingsKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_settings", Type.KEYSYM, 79, category));
+      openSelectorKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_selector", Type.KEYBOARD, 342, category));
+      openSettingsKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_settings", Type.KEYBOARD, 79, category));
       ClientTickEvents.END_CLIENT_TICK.register(QuickOffhandClient::tick);
       HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("quickoffhand", "selector"), QuickOffhandClient::render);
    }

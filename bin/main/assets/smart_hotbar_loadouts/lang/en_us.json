@@ -1,0 +1,8 @@
+{
+  "key.categories.smart_hotbar_loadouts.loadouts": "Smart Hotbar Loadouts",
+  "key.smart_hotbar_loadouts.apply": "Apply loadout",
+  "key.smart_hotbar_loadouts.configure": "Configure loadout",
+  "screen.smart_hotbar_loadouts.title": "Smart Hotbar Loadout",
+  "screen.smart_hotbar_loadouts.done": "Done",
+  "modmenu.descriptionTranslation.smart_hotbar_loadouts": "Rule-based hotbar presets that select the best items from your inventory."
+}

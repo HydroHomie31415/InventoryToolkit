@@ -29,13 +29,13 @@ public final class AutoToolSwitchClient {
 		config = AutoToolSwitchConfig.load();
 		activationKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.inventory_toolkit.auto_tool.activation",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.KEY_LALT,
 			InventoryToolkitClient.keyCategory()
 		));
 		toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.inventory_toolkit.auto_tool.toggle",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			InventoryToolkitClient.keyCategory()
 		));

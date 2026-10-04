@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "dev.inventorysweeper.mixin.client",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"ItemEntityRendererMixin",
+		"ItemEntityRenderStateMixin",
+		"SubmitNodeCollectionMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

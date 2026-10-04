@@ -32,19 +32,19 @@ public final class HydrosBundlesClient implements ClientModInitializer {
 
 		quickStackKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.hydros_bundles.quick_stack",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.KEY_G,
 			category
 		));
 		openBundlesKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.hydros_bundles.open",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.KEY_B,
 			category
 		));
 		configureKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.hydros_bundles.configure",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			category
 		));

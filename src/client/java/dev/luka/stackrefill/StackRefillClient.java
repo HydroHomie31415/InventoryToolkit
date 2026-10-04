@@ -30,13 +30,13 @@ public final class StackRefillClient implements ClientModInitializer {
 		KeyMapping.Category category = InventoryToolkitClient.keyCategory();
 		toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.stack_refill.toggle",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			category
 		));
 		configureKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.stack_refill.configure",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			category
 		));

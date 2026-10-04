@@ -5,6 +5,7 @@ import dev.hydro.hydrosbundles.config.HydrosBundlesSettingsScreen;
 import dev.hydro.hydrosrecipebook.RecipeBookConfigScreen;
 import dev.inventorysweeper.config.SweeperConfigScreen;
 import dev.luka.inventorytoolkit.autotool.AutoToolSwitchConfigScreen;
+import dev.luka.inventorytoolkit.quickstack.QuickStackConfigScreen;
 import dev.luka.smarthotbar.LoadoutScreen;
 import dev.luka.smarthotbar.SmartHotbarClient;
 import dev.luka.shiftdragtransfer.config.ShiftDragTransferConfigScreen;
@@ -39,7 +40,7 @@ public final class InventoryToolkitScreen extends Screen {
 		moduleButtonWidth = moduleColumns == 2
 			? Math.min(GRID_BUTTON_WIDTH, (width - GRID_GAP - 12) / 2)
 			: Math.min(BUTTON_WIDTH, width - 12);
-		int rowCount = (8 + moduleColumns - 1) / moduleColumns;
+		int rowCount = (9 + moduleColumns - 1) / moduleColumns;
 		int gridWidth = moduleButtonWidth * moduleColumns + GRID_GAP * (moduleColumns - 1);
 		moduleFirstX = width / 2 - gridWidth / 2;
 		moduleFirstY = Math.max(45, height / 2 - (rowCount * (BUTTON_HEIGHT + GAP) + 27) / 2);
@@ -91,6 +92,12 @@ public final class InventoryToolkitScreen extends Screen {
 			"screen.inventory_toolkit.sweeper",
 			"screen.inventory_toolkit.sweeper.description",
 			button -> minecraft.gui.setScreen(SweeperConfigScreen.create(this))
+		);
+		addModuleButton(
+			8,
+			"screen.inventory_toolkit.quick_stack",
+			"screen.inventory_toolkit.quick_stack.description",
+			button -> minecraft.gui.setScreen(QuickStackConfigScreen.create(this))
 		);
 
 		addRenderableWidget(Button.builder(

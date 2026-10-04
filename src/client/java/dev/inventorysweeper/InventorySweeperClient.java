@@ -28,7 +28,7 @@ public final class InventorySweeperClient implements ClientModInitializer {
 		KeyMapping.Category category = InventoryToolkitClient.keyCategory();
 		toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.inventory_sweeper.toggle",
-			InputConstants.Type.KEYSYM,
+			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			category
 		));

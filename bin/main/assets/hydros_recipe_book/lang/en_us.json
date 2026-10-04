@@ -1,0 +1,22 @@
+{
+	"config.hydros_recipe_book.title": "Recipe Book Enhancements",
+	"config.hydros_recipe_book.category.general": "General",
+	"config.hydros_recipe_book.category.general.description": "Turn off the enhancements to use Minecraft's original recipe book behavior.",
+	"config.hydros_recipe_book.enabled": "Enable Recipe Book Enhancements",
+	"config.hydros_recipe_book.enabled.tooltip": "Adds all local recipes, favorites, right-click instant crafting, and enhanced recipe grouping. Disable this for the vanilla recipe book.",
+	"hydros_recipe_book.favorite.added": "Favorited %s",
+	"hydros_recipe_book.favorite.removed": "Removed %s from favorites",
+	"hydros_recipe_book.favorite.tooltip": "★ Favorite",
+	"hydros_recipe_book.favorite.add_hint": "Middle-click to favorite",
+	"hydros_recipe_book.favorite.remove_hint": "Middle-click to unfavorite",
+	"hydros_recipe_book.craft.inventory_full": "Could not move the crafted item: inventory may be full",
+	"hydros_recipe_book.local.wrong_station": "Open the correct crafting station for this recipe",
+	"hydros_recipe_book.local.busy": "Please wait for the current recipe action to finish",
+	"hydros_recipe_book.local.cursor_not_empty": "Put down the item held by your cursor first",
+	"hydros_recipe_book.local.cancelled": "Recipe placement cancelled because the screen changed",
+	"hydros_recipe_book.local.missing_ingredients": "You do not have the required ingredients",
+	"hydros_recipe_book.local.could_not_clear": "Could not clear the crafting slots: your inventory may be full",
+	"hydros_recipe_book.local.inventory_changed": "Recipe placement stopped because the inventory changed",
+	"hydros_recipe_book.local.server_rejected": "The server rejected this locked or modified recipe",
+	"hydros_recipe_book.local.cooking_started": "Ingredients placed; cooking will finish normally"
+}

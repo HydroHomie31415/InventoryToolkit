@@ -1,0 +1,64 @@
+{
+	"schemaVersion": 1,
+	"id": "inventory_toolkit",
+	"version": "${version}",
+	"name": "Inventory Toolkit",
+	"description": "A complete inventory toolkit with better recipes, automatic tool switching, transfers, container quick stacking and search, loadouts, offhand swapping, bundle routing, stack refills, and sweeping.",
+	"authors": [
+		"Hydro",
+		"Luka"
+	],
+	"license": "All-Rights-Reserved",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.luka.inventorytoolkit.InventoryToolkitClient"
+		],
+		"modmenu": [
+			"dev.luka.inventorytoolkit.config.InventoryToolkitModMenu"
+		]
+	},
+	"mixins": [
+		{
+			"config": "inventory_toolkit.client.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "stack_refill.client.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "inventory_sweeper.client.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "shift_drag_transfer.client.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "quickoffhand.client.mixins.json",
+			"environment": "client"
+		},
+		{
+			"config": "hydros_recipe_book.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": ">=0.161.0",
+		"modmenu": ">=21.0.0",
+		"cloth-config": ">=26.3.159"
+	},
+	"breaks": {
+		"stack_refill": "*",
+		"smart_hotbar_loadouts": "*",
+		"inventory_sweeper": "*",
+		"hydros_bundles": "*",
+		"hydros_recipe_book": "*",
+		"shift_drag_transfer": "*",
+		"quickoffhand": "*"
+	}
+}
