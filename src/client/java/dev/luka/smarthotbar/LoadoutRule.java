@@ -1,28 +1,28 @@
 package dev.luka.smarthotbar;
 
+import net.minecraft.network.chat.Component;
+
+import java.util.Locale;
+
 public enum LoadoutRule {
-    NONE("Empty", "—"),
-    BEST_PICKAXE("Best pickaxe", "⛏"),
-    BEST_AXE("Best axe", "Axe"),
-    BEST_WEAPON("Highest-damage weapon", "⚔"),
-    WATER_BUCKET("Water bucket", "H₂O"),
-    BUILDING_BLOCKS("Building blocks", "Block"),
-    BEST_FOOD("Best food", "Food");
+    NONE,
+    BEST_PICKAXE,
+    BEST_AXE,
+    BEST_WEAPON,
+    WATER_BUCKET,
+    BUILDING_BLOCKS,
+    BEST_FOOD;
 
-    private final String label;
-    private final String shortLabel;
-
-    LoadoutRule(String label, String shortLabel) {
-        this.label = label;
-        this.shortLabel = shortLabel;
+    public Component label() {
+        return Component.translatable(translationKey());
     }
 
-    public String label() {
-        return label;
+    public Component shortLabel() {
+        return Component.translatable(translationKey() + ".short");
     }
 
-    public String shortLabel() {
-        return shortLabel;
+    private String translationKey() {
+        return "rule.smart_hotbar_loadouts." + name().toLowerCase(Locale.ROOT);
     }
 
     public LoadoutRule next() {

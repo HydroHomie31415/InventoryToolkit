@@ -8,7 +8,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class QuickStackConfigScreen {
 	private QuickStackConfigScreen() {
@@ -100,6 +104,52 @@ public final class QuickStackConfigScreen {
 				"config.inventory_toolkit.quick_stack.highlight_seconds.tooltip"
 			))
 			.setSaveConsumer(value -> config.highlightSeconds = value)
+			.build());
+		search.addEntry(toggle(entries, "search_craftable", config.searchCraftable, true,
+			value -> config.searchCraftable = value));
+
+		ConfigCategory sort = builder.getOrCreateCategory(Component.translatable(
+			"config.inventory_toolkit.quick_stack.category.sort"
+		));
+		sort.addEntry(entries.startTextDescription(Component.translatable(
+			"config.inventory_toolkit.quick_stack.sort.description"
+		)).build());
+		sort.addEntry(toggle(entries, "sort_enabled", config.sortEnabled, true,
+			value -> config.sortEnabled = value));
+		sort.addEntry(entries.fillKeybindingField(
+				Component.translatable("config.inventory_toolkit.quick_stack.sort_key"),
+				QuickStackClient.sortKey()
+			)
+			.setTooltip(Component.translatable("config.inventory_toolkit.quick_stack.sort_key.tooltip"))
+			.build());
+		sort.addEntry(toggle(entries, "show_sort_button", config.showSortButton, true,
+			value -> config.showSortButton = value));
+		sort.addEntry(toggle(entries, "sort_preview", config.sortPreview, true,
+			value -> config.sortPreview = value));
+		sort.addEntry(toggle(entries, "sort_inventory", config.sortInventory, true,
+			value -> config.sortInventory = value));
+		sort.addEntry(toggle(entries, "sort_use_chest_names", config.sortUseChestNames, true,
+			value -> config.sortUseChestNames = value));
+		sort.addEntry(toggle(entries, "sort_include_shulker_boxes", config.sortIncludeShulkerBoxes, false,
+			value -> config.sortIncludeShulkerBoxes = value));
+		sort.addEntry(toggle(entries, "sort_include_backpack", config.sortIncludeBackpack, true,
+			value -> config.sortIncludeBackpack = value));
+		sort.addEntry(entries.startStrList(
+				Component.translatable("config.inventory_toolkit.quick_stack.sort_rules"),
+				config.sortRules
+			)
+			.setDefaultValue(List.of())
+			.setExpanded(true)
+			.setInsertInFront(false)
+			.setTooltip(Component.translatable("config.inventory_toolkit.quick_stack.sort_rules.tooltip"))
+			.setCellErrorSupplier(value -> SortClassifier.parseRule(value) == null
+				? Optional.of(Component.translatable("config.inventory_toolkit.quick_stack.sort_rules.invalid"))
+				: Optional.empty())
+			.setSaveConsumer(values -> config.sortRules = values.stream()
+				.map(String::trim)
+				.filter(value -> !value.isEmpty())
+				.distinct()
+				.collect(Collectors.toCollection(ArrayList::new)))
 			.build());
 
 		builder.setSavingRunnable(() -> {

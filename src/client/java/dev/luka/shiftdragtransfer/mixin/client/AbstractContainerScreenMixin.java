@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import dev.luka.shiftdragtransfer.ShiftDragTransferClient;
 import dev.luka.shiftdragtransfer.ShiftDragTransferConfig;
 import dev.luka.shiftdragtransfer.ShiftDragTransferConfig.DestinationPriority;
@@ -257,7 +258,7 @@ public abstract class AbstractContainerScreenMixin {
 			Slot slot,
 			ShiftDragTransferConfig config
 	) {
-		if (!shiftDragTransfer$isPlayerInventorySlot(slot)) {
+		if (!shiftDragTransfer$isPlayerInventorySlot(slot) || SlotLockClient.isLocked(slot)) {
 			return false;
 		}
 

@@ -1,18 +1,16 @@
 package dev.luka.smarthotbar;
 
+import net.minecraft.network.chat.Component;
+
+import java.util.Locale;
+
 public enum PickaxePreference {
-    NEUTRAL("Neutral"),
-    SILK_TOUCH("Silk Touch"),
-    FORTUNE("Fortune");
+    NEUTRAL,
+    SILK_TOUCH,
+    FORTUNE;
 
-    private final String label;
-
-    PickaxePreference(String label) {
-        this.label = label;
-    }
-
-    public String label() {
-        return label;
+    public Component label() {
+        return Component.translatable("pickaxe_preference.smart_hotbar_loadouts." + name().toLowerCase(Locale.ROOT));
     }
 
     public PickaxePreference next() {

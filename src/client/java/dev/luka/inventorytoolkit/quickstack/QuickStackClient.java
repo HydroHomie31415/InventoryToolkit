@@ -1,6 +1,7 @@
 package dev.luka.inventorytoolkit.quickstack;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.luka.inventorytoolkit.CornerButtons;
 import dev.luka.inventorytoolkit.InventoryToolkitClient;
 import dev.luka.inventorytoolkit.containersearch.ContainerHighlights;
 import dev.luka.inventorytoolkit.containersearch.ContainerMemory;
@@ -11,28 +12,31 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
 public final class QuickStackClient {
-	private static final int BUTTON_WIDTH = 14;
-	private static final int BUTTON_HEIGHT = 12;
-	private static final int BUTTON_INSET_X = 7;
-	private static final int BUTTON_INSET_Y = 4;
-	private static final int BUTTON_GAP = 2;
+	private static final CornerButtons.State SORT_CONFIRM = new CornerButtons.State(
+		"button.inventory_toolkit.sort.confirm",
+		"button.inventory_toolkit.sort.confirm.tooltip"
+	);
 
 	private static QuickStackConfig config;
 	private static KeyMapping quickStackKey;
 	private static KeyMapping searchKey;
+	private static KeyMapping sortKey;
 	private static NearbyQuickStack nearby;
 
 	private QuickStackClient() {
@@ -48,6 +52,12 @@ public final class QuickStackClient {
 		));
 		searchKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.inventory_toolkit.container_search",
+			InputConstants.Type.KEYBOARD,
+			InputConstants.UNKNOWN.getValue(),
+			InventoryToolkitClient.keyCategory()
+		));
+		sortKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.inventory_toolkit.sort_nearby",
 			InputConstants.Type.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			InventoryToolkitClient.keyCategory()
@@ -75,17 +85,38 @@ public final class QuickStackClient {
 	private static void endTick(Minecraft client) {
 		while (quickStackKey.consumeClick()) {
 			if (nearby.isRunning()) {
-				nearby.cancel();
+				nearby.cancelByPlayer();
 			} else if (client.gui.screen() == null) {
 				nearby.start(config);
 			}
 		}
+		while (sortKey.consumeClick()) {
+			if (nearby.isRunning()) {
+				nearby.cancelByPlayer();
+			} else if (client.gui.screen() == null) {
+				nearby.startSort(config);
+			}
+		}
 		while (searchKey.consumeClick()) {
-			if (config.memoryEnabled && client.gui.screen() == null) {
-				client.gui.setScreen(new ContainerSearchScreen(false, ""));
+			if (client.gui.screen() == null) {
+				openSearch(client, false);
 			}
 		}
 		nearby.tick(config);
+	}
+
+	private static void openSearch(Minecraft client, boolean returnToInventory) {
+		if (config.memoryEnabled) {
+			client.gui.setScreen(new ContainerSearchScreen(returnToInventory, ""));
+		} else {
+			explain(client, Component.translatable("message.inventory_toolkit.disabled.scan"));
+		}
+	}
+
+	private static void explain(Minecraft client, Component message) {
+		if (client.player != null) {
+			client.gui.hud.setOverlayMessage(message, false);
+		}
 	}
 
 	public static KeyMapping quickStackKey() {
@@ -94,6 +125,10 @@ public final class QuickStackClient {
 
 	public static KeyMapping searchKey() {
 		return searchKey;
+	}
+
+	public static KeyMapping sortKey() {
+		return sortKey;
 	}
 
 	private static void attach(Minecraft client, Screen screen, int width, int height) {
@@ -127,13 +162,21 @@ public final class QuickStackClient {
 
 			ItemStack stack = slot.getItem();
 			int containers = ContainerHighlights.showItem(stack.getItem(), config.highlightSeconds);
-			client.gui.hud.setOverlayMessage(Component.translatable(
-				containers > 0
-					? "message.inventory_toolkit.container_search.highlighting"
-					: "message.inventory_toolkit.container_search.not_found",
-				containers,
-				stack.getItem().getName(stack)
-			), false);
+			Component name = stack.getItem().getName(stack);
+			if (containers > 0) {
+				explain(client, Component.translatable(
+					"message.inventory_toolkit.container_search.highlighting",
+					containers,
+					name
+				));
+			} else {
+				Component elsewhere = ContainerMemory.describeOtherDimensions(
+					BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()
+				);
+				explain(client, elsewhere == null
+					? Component.translatable("message.inventory_toolkit.container_search.not_found", containers, name)
+					: Component.translatable("message.inventory_toolkit.container_search.not_found_here", name, elsewhere));
+			}
 			return false;
 		});
 	}
@@ -143,105 +186,110 @@ public final class QuickStackClient {
 			if (!config.enabled || !quickStackKey.matches(event)) {
 				return true;
 			}
-			QuickStackDepositor.deposit(client, screen.getMenu(), config);
+			depositIntoOpenContainer(client, screen);
 			return false;
 		});
 
 		if (config.enabled && config.showButton) {
-			addCornerButton(
+			CornerButtons.add(
 				screen,
 				0,
 				"button.inventory_toolkit.quick_stack",
 				"button.inventory_toolkit.quick_stack.tooltip",
-				() -> QuickStackDepositor.deposit(client, screen.getMenu(), config)
+				() -> depositIntoOpenContainer(client, screen)
 			);
+		}
+	}
+
+	private static void depositIntoOpenContainer(Minecraft client, AbstractContainerScreen<?> screen) {
+		if (!screen.getMenu().getCarried().isEmpty()) {
+			explain(client, Component.translatable("message.inventory_toolkit.cursor_not_empty"));
+			return;
+		}
+		int moved = QuickStackDepositor.deposit(client, screen.getMenu(), config);
+		if (moved > 0) {
+			if (config.showMessages) {
+				explain(client, Component.translatable("message.inventory_toolkit.quick_stack.finished_here", moved));
+			}
+		} else {
+			explain(client, Component.translatable("message.inventory_toolkit.quick_stack.nothing_matched_here"));
 		}
 	}
 
 	private static void attachToInventory(Minecraft client, InventoryScreen screen) {
 		boolean nearbyAvailable = config.enabled && config.nearbyEnabled;
 		ScreenKeyboardEvents.allowKeyPress(screen).register((ignored, event) -> {
-			if (nearbyAvailable && quickStackKey.matches(event)) {
-				startNearbyFromInventory(screen);
+			if (quickStackKey.matches(event)) {
+				startNearbyFromInventory(NearbyQuickStack.Mode.QUICK_STACK);
 				return false;
 			}
-			if (config.memoryEnabled && searchKey.matches(event)) {
-				client.gui.setScreen(new ContainerSearchScreen(true, ""));
+			if (sortKey.matches(event)) {
+				startNearbyFromInventory(NearbyQuickStack.Mode.SORT);
+				return false;
+			}
+			if (searchKey.matches(event)) {
+				openSearch(client, true);
 				return false;
 			}
 			return true;
 		});
 
+		// While a run is going, any of these buttons cancels it.
+		Supplier<CornerButtons.State> cancelWhileRunning = () ->
+			nearby.isRunning() ? CornerButtons.State.CANCEL : null;
 		int buttonIndex = 0;
-		Button quickStackButton = null;
+		List<Button> cancelButtons = new ArrayList<>();
 		if (nearbyAvailable && config.showInventoryButton) {
-			quickStackButton = addCornerButton(
+			cancelButtons.add(CornerButtons.add(
 				screen,
 				buttonIndex++,
 				"button.inventory_toolkit.quick_stack",
 				"button.inventory_toolkit.quick_stack.nearby.tooltip",
-				() -> startNearbyFromInventory(screen)
+				() -> startNearbyFromInventory(NearbyQuickStack.Mode.QUICK_STACK),
+				cancelWhileRunning
+			));
+		}
+		if (config.memoryEnabled && config.showSearchButton) {
+			CornerButtons.add(
+				screen,
+				buttonIndex++,
+				"button.inventory_toolkit.container_search",
+				"button.inventory_toolkit.container_search.tooltip",
+				() -> openSearch(client, true)
 			);
+		}
+		if (config.sortEnabled && config.showSortButton) {
+			cancelButtons.add(CornerButtons.add(
+				screen,
+				buttonIndex,
+				"button.inventory_toolkit.sort",
+				"button.inventory_toolkit.sort.tooltip",
+				() -> startNearbyFromInventory(NearbyQuickStack.Mode.SORT),
+				() -> nearby.isRunning()
+					? CornerButtons.State.CANCEL
+					: nearby.isSortPreviewPending() ? SORT_CONFIRM : null
+			));
 		}
 
 		// Inventory clicks would be ignored while a container menu is active
 		// anyway; swallow them so nothing appears to happen and then revert.
-		// The quick stack button stays clickable so it can cancel the run.
-		Button cancelButton = quickStackButton;
+		// The quick stack and sort buttons stay clickable so they can cancel the run.
 		ScreenMouseEvents.allowMouseClick(screen).register((ignored, event) ->
-			!nearby.isRunning() || (cancelButton != null && cancelButton.isMouseOver(event.x(), event.y()))
+			!nearby.isRunning()
+				|| cancelButtons.stream().anyMatch(button -> button.isMouseOver(event.x(), event.y()))
 		);
 		ScreenMouseEvents.allowMouseScroll(screen).register((ignored, mouseX, mouseY, horizontal, vertical) ->
 			!nearby.isRunning()
 		);
-		if (config.memoryEnabled && config.showSearchButton) {
-			addCornerButton(
-				screen,
-				buttonIndex,
-				"button.inventory_toolkit.container_search",
-				"button.inventory_toolkit.container_search.tooltip",
-				() -> client.gui.setScreen(new ContainerSearchScreen(true, ""))
-			);
-		}
 	}
 
-	private static void startNearbyFromInventory(InventoryScreen screen) {
+	private static void startNearbyFromInventory(NearbyQuickStack.Mode mode) {
 		if (nearby.isRunning()) {
-			nearby.cancel();
-		} else if (screen.getMenu().getCarried().isEmpty()) {
-			nearby.start(config);
+			nearby.cancelByPlayer();
+		} else if (mode == NearbyQuickStack.Mode.SORT) {
+			nearby.startSort(config);
+		} else {
+			nearby.start(config, mode, null);
 		}
-	}
-
-	/**
-	 * @param indexFromRight 0 for the corner itself, 1 for the slot to its left, and so on
-	 */
-	private static Button addCornerButton(
-		AbstractContainerScreen<?> screen,
-		int indexFromRight,
-		String labelKey,
-		String tooltipKey,
-		Runnable action
-	) {
-		AbstractContainerScreenAccessor bounds = (AbstractContainerScreenAccessor) screen;
-		Button button = Button.builder(
-			Component.translatable(labelKey),
-			ignored -> action.run()
-		).size(BUTTON_WIDTH, BUTTON_HEIGHT).build();
-		button.setTooltip(Tooltip.create(Component.translatable(tooltipKey)));
-		Screens.getWidgets(screen).add(button);
-
-		Runnable placeButton = () -> button.setPosition(
-			bounds.inventoryToolkit$leftPos() + bounds.inventoryToolkit$imageWidth()
-				- BUTTON_INSET_X - BUTTON_WIDTH - indexFromRight * (BUTTON_WIDTH + BUTTON_GAP),
-			bounds.inventoryToolkit$topPos() + BUTTON_INSET_Y
-		);
-		placeButton.run();
-		// Opening the recipe book moves the inventory sideways without
-		// re-initialising the screen, so follow it every frame.
-		ScreenEvents.beforeExtract(screen).register((ignored, graphics, mouseX, mouseY, delta) ->
-			placeButton.run()
-		);
-		return button;
 	}
 }

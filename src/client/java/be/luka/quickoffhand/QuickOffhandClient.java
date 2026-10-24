@@ -1,5 +1,6 @@
 package be.luka.quickoffhand;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.InputConstants.Type;
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
 import dev.luka.inventorytoolkit.InventoryToolkitClient;
@@ -42,8 +43,8 @@ public final class QuickOffhandClient implements ClientModInitializer {
    public void onInitializeClient() {
       ensureConfigLoaded();
       KeyMapping.Category category = InventoryToolkitClient.keyCategory();
-      openSelectorKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_selector", Type.KEYBOARD, 342, category));
-      openSettingsKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_settings", Type.KEYBOARD, 79, category));
+      openSelectorKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_selector", Type.MOUSE, InputConstants.MOUSE_BUTTON_4, category));
+      openSettingsKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.quickoffhand.open_settings", Type.KEYBOARD, InputConstants.UNKNOWN.getValue(), category));
       ClientTickEvents.END_CLIENT_TICK.register(QuickOffhandClient::tick);
       HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("quickoffhand", "selector"), QuickOffhandClient::render);
    }
@@ -80,6 +81,11 @@ public final class QuickOffhandClient implements ClientModInitializer {
       ensureConfigLoaded();
       cancelSelector();
       return new QuickOffhandConfigScreen(parent, config);
+   }
+
+   public static QuickOffhandConfig config() {
+      ensureConfigLoaded();
+      return config;
    }
 
    private static void ensureConfigLoaded() {
@@ -192,6 +198,7 @@ public final class QuickOffhandClient implements ClientModInitializer {
    private static boolean canUseSelector(Minecraft client) {
       LocalPlayer player = client.player;
       return player != null
+         && config.enabled
          && client.gameMode != null
          && client.gui.screen() == null
          && client.mouseHandler.isMouseGrabbed()

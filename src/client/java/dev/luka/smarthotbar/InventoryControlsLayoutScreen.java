@@ -1,5 +1,6 @@
 package dev.luka.smarthotbar;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,7 +21,7 @@ public final class InventoryControlsLayoutScreen extends Screen {
     private double dragOffsetY;
 
     public InventoryControlsLayoutScreen(Screen parent, LoadoutConfig config) {
-        super(Component.literal("Inventory Controls Layout"));
+        super(Component.translatable("screen.smart_hotbar_loadouts.layout.title"));
         this.parent = parent;
         this.config = config;
     }
@@ -32,10 +33,10 @@ public final class InventoryControlsLayoutScreen extends Screen {
         int y = inventoryTop() + config.inventoryControlsOffsetY();
 
         presetPreview = addRenderableWidget(Button.builder(
-                Component.literal("P" + (config.selectedPreset() + 1)), button -> {
+                InventoryPresetControls.presetLabel(config), button -> {
                 }).bounds(x, y, size.presetWidth(), size.height()).build());
         autoPreview = addRenderableWidget(Button.builder(
-                Component.literal(config.isAutoApply() ? "A:On" : "A:Off"), button -> {
+                InventoryPresetControls.autoLabel(config), button -> {
                 }).bounds(x + size.presetWidth() + size.gap(), y,
                         size.autoWidth(), size.height()).build());
 
@@ -43,17 +44,17 @@ public final class InventoryControlsLayoutScreen extends Screen {
             config.cycleInventoryControlsSize();
             rebuildWidgets();
         }).bounds(width / 2 - 102, height - 48, 100, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Reset"), button -> {
+        addRenderableWidget(Button.builder(Component.translatable("screen.smart_hotbar_loadouts.layout.reset"), button -> {
             config.resetInventoryControlsLayout();
             rebuildWidgets();
         }).bounds(width / 2 + 2, height - 48, 100, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
+        addRenderableWidget(Button.builder(Component.translatable("screen.smart_hotbar_loadouts.done"), button -> onClose())
                 .bounds(width / 2 - 100, height - 24, 200, 20).build());
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && isOverControls(event.x(), event.y())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && isOverControls(event.x(), event.y())) {
             draggingControls = true;
             dragOffsetX = event.x() - presetPreview.getX();
             dragOffsetY = event.y() - presetPreview.getY();
@@ -113,7 +114,8 @@ public final class InventoryControlsLayoutScreen extends Screen {
     }
 
     private Component sizeLabel() {
-        return Component.literal("Size: " + config.inventoryControlsSize().label());
+        return Component.translatable("screen.smart_hotbar_loadouts.layout.size",
+                config.inventoryControlsSize().label());
     }
 
     @Override
@@ -124,7 +126,7 @@ public final class InventoryControlsLayoutScreen extends Screen {
         graphics.fill(left, top, left + INVENTORY_WIDTH, top + INVENTORY_HEIGHT, 0x60404040);
         graphics.outline(left, top, INVENTORY_WIDTH, INVENTORY_HEIGHT, 0xFFAAAAAA);
         graphics.centeredText(font, title, width / 2, 10, 0xFFFFFFFF);
-        graphics.centeredText(font, Component.literal("Drag the preview controls anywhere"),
+        graphics.centeredText(font, Component.translatable("screen.smart_hotbar_loadouts.layout.hint"),
                 width / 2, 24, 0xFFAAAAAA);
         super.extractRenderState(graphics, mouseX, mouseY, delta);
     }

@@ -29,7 +29,7 @@ public final class SmartHotbarClient implements ClientModInitializer {
         KeyMapping configure = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.smart_hotbar_loadouts.configure",
                 InputConstants.Type.KEYBOARD,
-                InputConstants.KEY_O,
+                InputConstants.UNKNOWN.getValue(),
                 category
         ));
 

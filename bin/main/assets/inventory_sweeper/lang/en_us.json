@@ -1,6 +1,6 @@
 {
   "key.category.inventory_sweeper.controls": "Inventory Sweeper",
-  "key.inventory_sweeper.toggle": "Toggle Inventory Sweeper",
+  "key.inventory_sweeper.toggle": "Inventory Sweeper: Turn on/off",
 
   "message.inventory_sweeper.enabled": "Inventory Sweeper: ON",
   "message.inventory_sweeper.disabled": "Inventory Sweeper: OFF",

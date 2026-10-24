@@ -3,7 +3,7 @@
 	"id": "inventory_toolkit",
 	"version": "${version}",
 	"name": "Inventory Toolkit",
-	"description": "A complete inventory toolkit with better recipes, automatic tool switching, transfers, container quick stacking and search, loadouts, offhand swapping, bundle routing, stack refills, and sweeping.",
+	"description": "A complete inventory toolkit with better recipes, automatic tool switching, transfers, container quick stacking, sorting, and search, crafting-table compacting, loadouts, offhand swapping, bundle routing, stack refills, and sweeping.",
 	"authors": [
 		"Hydro",
 		"Luka"

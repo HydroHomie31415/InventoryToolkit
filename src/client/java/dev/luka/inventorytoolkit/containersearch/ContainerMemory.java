@@ -17,6 +17,8 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -40,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Remembers what was inside every chest, barrel, and shulker box the player
@@ -196,6 +199,48 @@ public final class ContainerMemory {
 
 	public static int size() {
 		return containers.size();
+	}
+
+	/**
+	 * Describes the other dimensions whose remembered containers hold the
+	 * item, such as "the Nether (3 containers)".
+	 *
+	 * @return null when no other dimension holds it
+	 */
+	public static Component describeOtherDimensions(String itemId) {
+		return describeOtherDimensions(stack -> stack.item().equals(itemId));
+	}
+
+	public static Component describeOtherDimensions(Predicate<StoredStack> matcher) {
+		Minecraft client = Minecraft.getInstance();
+		String current = client.level == null ? null : dimensionId(client.level);
+		Map<String, Integer> counts = new LinkedHashMap<>();
+		for (StoredContainer container : containers.values()) {
+			if (!container.dimension().equals(current) && container.items().stream().anyMatch(matcher)) {
+				counts.merge(container.dimension(), 1, Integer::sum);
+			}
+		}
+		if (counts.isEmpty()) {
+			return null;
+		}
+
+		MutableComponent description = Component.empty();
+		boolean first = true;
+		for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+			if (!first) {
+				description.append(", ");
+			}
+			first = false;
+			description.append(Component.translatable(
+				"message.inventory_toolkit.container_search.dimension_count",
+				Component.translatableWithFallback(
+					"dimension.inventory_toolkit." + entry.getKey().replace(':', '.'),
+					entry.getKey()
+				),
+				entry.getValue()
+			));
+		}
+		return description;
 	}
 
 	public static void clear() {

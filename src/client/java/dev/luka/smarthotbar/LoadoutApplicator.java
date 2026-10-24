@@ -1,6 +1,7 @@
 package dev.luka.smarthotbar;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -35,12 +36,12 @@ public final class LoadoutApplicator {
             return;
         }
         if (!config.isEnabled()) {
-            client.gui.hud.setOverlayMessage(Component.literal("Smart hotbar is disabled."), false);
+            client.gui.hud.setOverlayMessage(Component.translatable("message.smart_hotbar_loadouts.disabled"), false);
             return;
         }
         if (player.containerMenu != player.inventoryMenu) {
             client.gui.hud.setOverlayMessage(
-                    Component.literal("Close the open container before applying a loadout."), false);
+                    Component.translatable("message.smart_hotbar_loadouts.container_open"), false);
             return;
         }
 
@@ -50,7 +51,7 @@ public final class LoadoutApplicator {
 
         for (int hotbarSlot = 0; hotbarSlot < Inventory.getSelectionSize(); hotbarSlot++) {
             LoadoutRule rule = config.get(hotbarSlot);
-            if (rule == LoadoutRule.NONE) {
+            if (rule == LoadoutRule.NONE || SlotLockClient.isLocked(hotbarSlot)) {
                 continue;
             }
 
@@ -77,8 +78,9 @@ public final class LoadoutApplicator {
             lockedSlots.add(hotbarSlot);
         }
 
-        client.gui.hud.setOverlayMessage(Component.literal(
-                moved == 0 ? "Smart hotbar is already up to date." : "Smart hotbar applied."
+        client.gui.hud.setOverlayMessage(Component.translatable(
+                moved == 0 ? "message.smart_hotbar_loadouts.up_to_date" : "message.smart_hotbar_loadouts.applied",
+                config.presetName()
         ), false);
     }
 
@@ -90,7 +92,7 @@ public final class LoadoutApplicator {
         // Equipment/offhand slots are intentionally excluded; only the 36 normal
         // inventory slots are safe to swap into a hotbar button.
         for (int slot = 0; slot < 36; slot++) {
-            if (lockedSlots.contains(slot)) {
+            if (lockedSlots.contains(slot) || SlotLockClient.isLocked(slot)) {
                 continue;
             }
             ItemStack stack = inventory.getItem(slot);

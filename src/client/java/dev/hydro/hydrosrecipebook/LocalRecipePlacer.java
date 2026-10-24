@@ -1,6 +1,7 @@
 package dev.hydro.hydrosrecipebook;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -431,7 +432,9 @@ public final class LocalRecipePlacer {
 	) {
 		StackedItemContents contents = new StackedItemContents();
 		for (Slot slot : menu.slots) {
-			if (slot.container == minecraft.player.getInventory() && slot.hasItem()) {
+			if (slot.container == minecraft.player.getInventory()
+				&& slot.hasItem()
+				&& !SlotLockClient.isLocked(slot)) {
 				contents.accountStack(slot.getItem());
 			}
 		}
@@ -446,6 +449,7 @@ public final class LocalRecipePlacer {
 		for (Slot slot : menu.slots) {
 			if (slot.container == minecraft.player.getInventory()
 				&& slot.hasItem()
+				&& !SlotLockClient.isLocked(slot)
 				&& slot.getItem().is(item)) {
 				return slot;
 			}

@@ -68,6 +68,13 @@ public final class QuickOffhandConfigScreen extends Screen {
 
    private void initGeneral(int left) {
       int y = 66;
+      this.addRenderableWidget(
+         Button.builder(this.toggleLabel(Component.translatable("screen.quickoffhand.enabled"), this.config.enabled), button -> {
+            this.config.enabled = !this.config.enabled;
+            this.reopen(QuickOffhandConfigScreen.Page.GENERAL, 0);
+         }).bounds(left, y, 310, 20).build()
+      );
+      y += 30;
       this.addRenderableWidget(Button.builder(Component.literal("−"), button -> {
          this.config.maxSlots = Math.max(1, this.config.maxSlots - 1);
          this.reopen(QuickOffhandConfigScreen.Page.GENERAL, 0);

@@ -26,7 +26,7 @@ public abstract class ClientPacketListenerMixin {
 		CallbackInfo callbackInfo
 	) {
 		ContainerMemory.onMenuOpened(packet.getType(), packet.getContainerId());
-		if (QuickStackClient.nearby().openSilently(packet.getType(), packet.getContainerId())) {
+		if (QuickStackClient.nearby().openSilently(packet.getType(), packet.getContainerId(), packet.getTitle())) {
 			callbackInfo.cancel();
 		}
 	}

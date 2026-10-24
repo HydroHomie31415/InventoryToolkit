@@ -75,7 +75,7 @@ public final class LoadoutScreen extends Screen {
             button.setMessage(pickaxePreferenceLabel());
         }).bounds(width / 2 - 100, controlsY + 28, 200, 20).build());
 
-        addRenderableWidget(Button.builder(Component.literal("Inventory controls layout…"),
+        addRenderableWidget(Button.builder(Component.translatable("screen.smart_hotbar_loadouts.layout"),
                 button -> minecraft.gui.setScreen(new InventoryControlsLayoutScreen(this, config)))
                 .bounds(width / 2 - 100, controlsY + 54, 200, 20).build());
 
@@ -106,15 +106,18 @@ public final class LoadoutScreen extends Screen {
     }
 
     private Component slotLabel(int slot) {
-        return Component.literal((slot + 1) + " " + draft[slot].shortLabel());
+        return Component.literal((slot + 1) + " ").append(draft[slot].shortLabel());
     }
 
     private Tooltip ruleTooltip(int slot) {
-        return Tooltip.create(Component.literal("Slot " + (slot + 1) + ": " + draft[slot].label()));
+        return Tooltip.create(Component.translatable("screen.smart_hotbar_loadouts.slot_tooltip",
+                slot + 1, draft[slot].label()));
     }
 
     private Component enabledLabel() {
-        return Component.literal(config.isEnabled() ? "Enabled" : "Disabled");
+        return Component.translatable(config.isEnabled()
+                ? "screen.smart_hotbar_loadouts.enabled"
+                : "screen.smart_hotbar_loadouts.disabled");
     }
 
     private Component presetLabel() {
@@ -122,11 +125,14 @@ public final class LoadoutScreen extends Screen {
     }
 
     private Component saveLabel() {
-        return Component.literal(dirty ? "Save Preset *" : "Save Preset");
+        return Component.translatable(dirty
+                ? "screen.smart_hotbar_loadouts.save_unsaved"
+                : "screen.smart_hotbar_loadouts.save");
     }
 
     private Component pickaxePreferenceLabel() {
-        return Component.literal("Pickaxe preference: " + config.pickaxePreference().label());
+        return Component.translatable("screen.smart_hotbar_loadouts.pickaxe_preference",
+                config.pickaxePreference().label());
     }
 
     @Override
@@ -136,7 +142,7 @@ public final class LoadoutScreen extends Screen {
         // frame ("Can only blur once per frame").
         graphics.fill(0, 0, width, height, 0xD0101010);
         graphics.centeredText(font, title, width / 2, height / 2 - 84, 0xFFFFFFFF);
-        graphics.centeredText(font, Component.literal("Click a hotbar slot to change its rule"),
+        graphics.centeredText(font, Component.translatable("screen.smart_hotbar_loadouts.hint"),
                 width / 2, height / 2 - 67, 0xFFAAAAAA);
         super.extractRenderState(graphics, mouseX, mouseY, delta);
     }

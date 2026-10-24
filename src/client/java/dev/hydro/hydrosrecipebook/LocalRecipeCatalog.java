@@ -116,29 +116,7 @@ public final class LocalRecipeCatalog {
 		KEYS_BY_DISPLAY.clear();
 
 		try {
-			List<PackResources> packs = new ArrayList<>(
-				minecraft.getResourceManager().listPacks().toList()
-			);
-			PackResources vanilla = minecraft.getVanillaPackResources().fullResources();
-			if (packs.stream().noneMatch(pack -> pack == vanilla)) {
-				packs.addFirst(vanilla);
-			}
-
-			MultiPackResourceManager resources =
-				new MultiPackResourceManager(PackType.SERVER_DATA, packs);
-			Map<Identifier, Recipe<?>> decoded = new TreeMap<>();
-			RegistryOps<JsonElement> ops =
-				connection.registryAccess().createSerializationContext(JsonOps.INSTANCE);
-			for (Map.Entry<Identifier, Resource> file : RECIPE_FILES.listMatchingResources(resources).entrySet()) {
-				Identifier id = RECIPE_FILES.fileToId(file.getKey());
-				try (BufferedReader reader = file.getValue().openAsReader()) {
-					Recipe.CODEC.parse(ops, StrictJsonParser.parse(reader))
-						.ifSuccess(recipe -> decoded.put(id, recipe.value()));
-				} catch (Exception exception) {
-					// Skip unreadable or malformed recipe files, like vanilla does.
-				}
-			}
-
+			Map<Identifier, Recipe<?>> decoded = decodeRecipes(minecraft, connection);
 			int nextSyntheticId = -1;
 			for (Map.Entry<Identifier, Recipe<?>> decodedRecipe : decoded.entrySet()) {
 				Recipe<?> recipe = decodedRecipe.getValue();
@@ -178,6 +156,39 @@ public final class LocalRecipeCatalog {
 			loadFailed = true;
 			HydrosRecipeBookLog.warn("Could not build the local recipe catalog", exception);
 		}
+	}
+
+	/**
+	 * Decodes every recipe file in the vanilla data and the loaded resource
+	 * packs, sorted by recipe ID. The server may differ if it uses data packs.
+	 */
+	public static Map<Identifier, Recipe<?>> decodeRecipes(
+		Minecraft minecraft,
+		ClientPacketListener connection
+	) {
+		List<PackResources> packs = new ArrayList<>(
+			minecraft.getResourceManager().listPacks().toList()
+		);
+		PackResources vanilla = minecraft.getVanillaPackResources().fullResources();
+		if (packs.stream().noneMatch(pack -> pack == vanilla)) {
+			packs.addFirst(vanilla);
+		}
+
+		MultiPackResourceManager resources =
+			new MultiPackResourceManager(PackType.SERVER_DATA, packs);
+		Map<Identifier, Recipe<?>> decoded = new TreeMap<>();
+		RegistryOps<JsonElement> ops =
+			connection.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+		for (Map.Entry<Identifier, Resource> file : RECIPE_FILES.listMatchingResources(resources).entrySet()) {
+			Identifier id = RECIPE_FILES.fileToId(file.getKey());
+			try (BufferedReader reader = file.getValue().openAsReader()) {
+				Recipe.CODEC.parse(ops, StrictJsonParser.parse(reader))
+					.ifSuccess(recipe -> decoded.put(id, recipe.value()));
+			} catch (Exception exception) {
+				// Skip unreadable or malformed recipe files, like vanilla does.
+			}
+		}
+		return decoded;
 	}
 
 	private static void install(ClientPacketListener connection, ClientRecipeBook book) {

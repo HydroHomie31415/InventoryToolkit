@@ -1,5 +1,6 @@
 package dev.hydro.hydrosrecipebook.mixin.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.hydro.hydrosrecipebook.FavoriteStore;
 import dev.hydro.hydrosrecipebook.HydrosRecipeBookClient;
 import dev.hydro.hydrosrecipebook.InstantCraftManager;
@@ -64,7 +65,8 @@ abstract class RecipeBookPageMixin {
 			return;
 		}
 		int button = event.button();
-		if ((button != 1 && button != 2) || overlay.isVisible()) {
+		if ((button != InputConstants.MOUSE_BUTTON_RIGHT && button != InputConstants.MOUSE_BUTTON_MIDDLE)
+			|| overlay.isVisible()) {
 			return;
 		}
 
@@ -74,7 +76,7 @@ abstract class RecipeBookPageMixin {
 				continue;
 			}
 
-			if (button == 2) {
+			if (button == InputConstants.MOUSE_BUTTON_MIDDLE) {
 				lastClickedRecipe = null;
 				lastClickedRecipeCollection = null;
 				FavoriteStore.toggle(recipeButton.getCollection());

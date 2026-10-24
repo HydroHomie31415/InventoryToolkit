@@ -1,6 +1,7 @@
 package dev.luka.inventorytoolkit.quickstack;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -89,7 +90,7 @@ public final class QuickStackDepositor {
 		}
 
 		int inventorySlot = slot.getContainerSlot();
-		if (inventorySlot < 0 || inventorySlot >= Inventory.INVENTORY_SIZE) {
+		if (inventorySlot < 0 || inventorySlot >= Inventory.INVENTORY_SIZE || SlotLockClient.isLocked(inventorySlot)) {
 			return false;
 		}
 		if (inventorySlot < Inventory.SELECTION_SIZE && !config.includeHotbar) {

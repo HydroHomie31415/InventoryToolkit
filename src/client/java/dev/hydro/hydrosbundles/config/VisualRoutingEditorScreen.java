@@ -1,5 +1,6 @@
 package dev.hydro.hydrosbundles.config;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.hydro.hydrosbundles.BundleInventory;
 import dev.hydro.hydrosbundles.HydrosBundlesClient;
 import dev.hydro.hydrosbundles.RedstoneClassifier;
@@ -139,7 +140,7 @@ public final class VisualRoutingEditorScreen extends Screen {
 		if (super.mouseClicked(event, doubleClick)) {
 			return true;
 		}
-		if (event.button() != 0) {
+		if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) {
 			return false;
 		}
 		int displayIndex = slotAt(event.x(), event.y());

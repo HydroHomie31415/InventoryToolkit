@@ -1,26 +1,28 @@
 package dev.luka.smarthotbar;
 
-public enum InventoryControlsSize {
-    TINY("Tiny", 22, 34, 10, 2),
-    SMALL("Small", 30, 50, 12, 3),
-    NORMAL("Normal", 40, 64, 16, 4);
+import net.minecraft.network.chat.Component;
 
-    private final String label;
+import java.util.Locale;
+
+public enum InventoryControlsSize {
+    TINY(56, 32, 10, 2),
+    SMALL(72, 40, 12, 3),
+    NORMAL(96, 52, 16, 4);
+
     private final int presetWidth;
     private final int autoWidth;
     private final int height;
     private final int gap;
 
-    InventoryControlsSize(String label, int presetWidth, int autoWidth, int height, int gap) {
-        this.label = label;
+    InventoryControlsSize(int presetWidth, int autoWidth, int height, int gap) {
         this.presetWidth = presetWidth;
         this.autoWidth = autoWidth;
         this.height = height;
         this.gap = gap;
     }
 
-    public String label() {
-        return label;
+    public Component label() {
+        return Component.translatable("size.smart_hotbar_loadouts." + name().toLowerCase(Locale.ROOT));
     }
 
     public int presetWidth() {

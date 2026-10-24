@@ -1,6 +1,7 @@
 package dev.hydro.hydrosbundles;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -51,7 +52,7 @@ public final class QuickStackManager {
 		int firstIndex = config.includeHotbar ? 0 : Inventory.getSelectionSize();
 		for (int index = firstIndex; index < BundleInventory.PLAYER_STORAGE_SIZE; index++) {
 			ItemStack stack = player.getInventory().getItem(index);
-			if (!stack.isEmpty() && !BundleInventory.isBundle(stack)) {
+			if (!stack.isEmpty() && !BundleInventory.isBundle(stack) && !SlotLockClient.isLocked(index)) {
 				pendingSources.addLast(index);
 			}
 		}

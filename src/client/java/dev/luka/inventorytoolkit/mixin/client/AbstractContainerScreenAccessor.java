@@ -16,6 +16,9 @@ public interface AbstractContainerScreenAccessor {
 	@Accessor("imageWidth")
 	int inventoryToolkit$imageWidth();
 
+	@Accessor("imageHeight")
+	int inventoryToolkit$imageHeight();
+
 	@Accessor("hoveredSlot")
 	Slot inventoryToolkit$hoveredSlot();
 }

@@ -11,6 +11,8 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class QuickStackConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -33,6 +35,15 @@ public final class QuickStackConfig {
 	public boolean showSearchButton = true;
 	public boolean altClickHighlight = true;
 	public int highlightSeconds = 30;
+	public boolean searchCraftable = true;
+	public boolean sortEnabled = true;
+	public boolean showSortButton = true;
+	public boolean sortPreview = true;
+	public boolean sortIncludeShulkerBoxes = false;
+	public boolean sortUseChestNames = true;
+	public boolean sortInventory = true;
+	public boolean sortIncludeBackpack = true;
+	public List<String> sortRules = new ArrayList<>();
 
 	public static QuickStackConfig load() {
 		if (!Files.exists(CONFIG_PATH)) {
@@ -88,5 +99,8 @@ public final class QuickStackConfig {
 		configVersion = 1;
 		containerDelayTicks = Math.max(0, Math.min(20, containerDelayTicks));
 		highlightSeconds = Math.max(5, Math.min(300, highlightSeconds));
+		if (sortRules == null) {
+			sortRules = new ArrayList<>();
+		}
 	}
 }

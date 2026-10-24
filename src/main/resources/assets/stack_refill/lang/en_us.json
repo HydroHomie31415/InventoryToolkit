@@ -1,7 +1,7 @@
 {
 	"key.category.stack_refill.controls": "Stack Refill",
-	"key.stack_refill.toggle": "Toggle Stack Refill",
-	"key.stack_refill.configure": "Open Stack Refill Settings",
+	"key.stack_refill.toggle": "Stack Refill: Turn on/off",
+	"key.stack_refill.configure": "Stack Refill: Open settings",
 
 	"message.stack_refill.enabled": "Stack Refill: ON",
 	"message.stack_refill.disabled": "Stack Refill: OFF",

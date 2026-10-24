@@ -1,15 +1,20 @@
 package dev.hydro.hydrosbundles.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.hydro.hydrosbundles.BundleInventory;
 import dev.hydro.hydrosbundles.HydrosBundlesClient;
 import dev.hydro.hydrosbundles.config.HydrosBundlesSettingsScreen;
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSelectBundleItemPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
@@ -23,12 +28,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BundleOverviewScreen extends Screen {
+	private static final Identifier CONTAINER_BACKGROUND =
+		Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
+	private static final Identifier SLOT_HIGHLIGHT_BACK = Identifier.withDefaultNamespace("container/slot_highlight_back");
+	private static final Identifier SLOT_HIGHLIGHT_FRONT = Identifier.withDefaultNamespace("container/slot_highlight_front");
 	private static final int SLOT_SIZE = 18;
+	private static final int CONTENT_COLUMNS = 9;
 	private static final int CONTENT_ROWS = 3;
+	private static final int IMAGE_WIDTH = 176;
+	// Same slices of generic_54.png that the vanilla chest screen uses.
+	private static final int CONTENT_HEIGHT = 17 + CONTENT_ROWS * SLOT_SIZE;
+	private static final int INVENTORY_HEIGHT = 96;
+	private static final int INVENTORY_V = 126;
+	private static final int BOTTOM_BORDER_HEIGHT = 7;
+	private static final int BOTTOM_BORDER_V = 215;
+	private static final int LABEL_COLOR = 0xFF404040;
+	private static final int SELECTED_BUNDLE_COLOR = 0x70FFC23A;
 
 	private final Screen parent;
 	private int selectedBundleIndex = -1;
 	private int contentPage;
+	private Button previousBundleButton;
+	private Button nextBundleButton;
+	private Button previousPageButton;
+	private Button nextPageButton;
 
 	public BundleOverviewScreen(Screen parent) {
 		super(Component.translatable("screen.hydros_bundles.title"));
@@ -38,23 +61,29 @@ public final class BundleOverviewScreen extends Screen {
 	@Override
 	protected void init() {
 		refreshSelectedBundle();
-		int center = width / 2;
-		addRenderableWidget(Button.builder(Component.literal("◀"), button -> cycleBundle(-1))
-			.bounds(center - 130, 25, 28, 20).build());
-		addRenderableWidget(Button.builder(Component.literal("▶"), button -> cycleBundle(1))
-			.bounds(center - 98, 25, 28, 20).build());
-		addRenderableWidget(Button.builder(Component.translatable("screen.hydros_bundles.previous_page"),
-				button -> changePage(-1))
-			.bounds(center - 66, 25, 44, 20).build());
-		addRenderableWidget(Button.builder(Component.translatable("screen.hydros_bundles.next_page"),
-				button -> changePage(1))
-			.bounds(center - 18, 25, 44, 20).build());
+		int left = leftPos();
+		int buttonTop = topPos() - 22;
+		previousBundleButton = addRenderableWidget(Button.builder(Component.literal("◀"), button -> cycleBundle(-1))
+			.tooltip(Tooltip.create(Component.translatable("screen.hydros_bundles.previous_bundle")))
+			.bounds(left, buttonTop, 20, 20).build());
+		nextBundleButton = addRenderableWidget(Button.builder(Component.literal("▶"), button -> cycleBundle(1))
+			.tooltip(Tooltip.create(Component.translatable("screen.hydros_bundles.next_bundle")))
+			.bounds(left + 22, buttonTop, 20, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("screen.hydros_bundles.config"),
 				button -> minecraft.gui.setScreen(new HydrosBundlesSettingsScreen(this)))
-			.bounds(center + 30, 25, 48, 20).build());
+			.bounds(left + IMAGE_WIDTH - 98, buttonTop, 48, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("screen.hydros_bundles.done"),
 				button -> onClose())
-			.bounds(center + 82, 25, 48, 20).build());
+			.bounds(left + IMAGE_WIDTH - 48, buttonTop, 48, 20).build());
+
+		int pageX = left + IMAGE_WIDTH + 3;
+		previousPageButton = addRenderableWidget(Button.builder(Component.literal("▲"), button -> changePage(-1))
+			.tooltip(Tooltip.create(Component.translatable("screen.hydros_bundles.previous_page")))
+			.bounds(pageX, contentTop(), 16, 16).build());
+		nextPageButton = addRenderableWidget(Button.builder(Component.literal("▼"), button -> changePage(1))
+			.tooltip(Tooltip.create(Component.translatable("screen.hydros_bundles.next_page")))
+			.bounds(pageX, contentTop() + CONTENT_ROWS * SLOT_SIZE - 16, 16, 16).build());
+		updateButtonStates();
 	}
 
 	@Override
@@ -62,11 +91,11 @@ public final class BundleOverviewScreen extends Screen {
 		if (super.mouseClicked(event, doubleClick)) {
 			return true;
 		}
-		if (event.button() != 0 || selectedBundle() == null) {
+		if (event.button() != InputConstants.MOUSE_BUTTON_LEFT || selectedBundle() == null) {
 			return false;
 		}
 
-		int contentSlot = slotAt(event.x(), event.y(), contentLeft(), contentTop(), contentColumns(), CONTENT_ROWS);
+		int contentSlot = contentSlotAt(event.x(), event.y());
 		if (contentSlot >= 0) {
 			int contentIndex = contentPage * pageSize() + contentSlot;
 			withdraw(contentIndex);
@@ -74,7 +103,7 @@ public final class BundleOverviewScreen extends Screen {
 		}
 
 		if (HydrosBundlesClient.config().showPlayerInventory) {
-			int displaySlot = slotAt(event.x(), event.y(), inventoryLeft(), inventoryTop(), 9, 4);
+			int displaySlot = inventorySlotAt(event.x(), event.y());
 			if (displaySlot >= 0) {
 				insertFromInventory(displayToInventoryIndex(displaySlot));
 				return true;
@@ -85,7 +114,7 @@ public final class BundleOverviewScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-		if (mouseX >= contentLeft() && mouseX < contentLeft() + contentColumns() * SLOT_SIZE
+		if (mouseX >= contentLeft() && mouseX < contentLeft() + CONTENT_COLUMNS * SLOT_SIZE
 			&& mouseY >= contentTop() && mouseY < contentTop() + CONTENT_ROWS * SLOT_SIZE
 			&& verticalAmount != 0.0) {
 			changePage(verticalAmount > 0.0 ? -1 : 1);
@@ -96,9 +125,7 @@ public final class BundleOverviewScreen extends Screen {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		graphics.fill(0, 0, width, height, 0xE0101010);
-		graphics.centeredText(font, title, width / 2, 8, 0xFFFFFFFF);
-
+		updateButtonStates();
 		ItemStack bundle = selectedBundle();
 		if (bundle == null) {
 			graphics.centeredText(
@@ -112,30 +139,20 @@ public final class BundleOverviewScreen extends Screen {
 			return;
 		}
 
-		BundleContents contents = BundleInventory.contents(bundle);
-		int percent = Math.round(BundleItem.getFullnessDisplay(bundle) * 100.0F);
-		graphics.centeredText(
-			font,
-			Component.translatable(
-				"screen.hydros_bundles.bundle_header",
-				bundle.getHoverName(),
-				contents.size(),
-				percent
-			),
-			width / 2,
-			49,
-			0xFFFFFFFF
-		);
+		boolean showInventory = HydrosBundlesClient.config().showPlayerInventory;
+		renderPanel(graphics, showInventory);
+		renderTitle(graphics, bundle);
 
+		BundleContents contents = BundleInventory.contents(bundle);
 		renderContents(graphics, contents, mouseX, mouseY);
-		if (HydrosBundlesClient.config().showPlayerInventory) {
+		if (showInventory) {
 			renderPlayerInventory(graphics, mouseX, mouseY);
 		}
 		graphics.centeredText(
 			font,
 			Component.translatable("screen.hydros_bundles.hint"),
 			width / 2,
-			122,
+			topPos() + imageHeight() + 4,
 			0xFFAAAAAA
 		);
 		super.extractRenderState(graphics, mouseX, mouseY, delta);
@@ -154,6 +171,40 @@ public final class BundleOverviewScreen extends Screen {
 		minecraft.gui.setScreen(parent);
 	}
 
+	private void renderPanel(GuiGraphicsExtractor graphics, boolean showInventory) {
+		int left = leftPos();
+		int top = topPos();
+		graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, left, top, 0.0F, 0.0F,
+			IMAGE_WIDTH, CONTENT_HEIGHT, 256, 256);
+		if (showInventory) {
+			graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, left, top + CONTENT_HEIGHT,
+				0.0F, INVENTORY_V, IMAGE_WIDTH, INVENTORY_HEIGHT, 256, 256);
+		} else {
+			graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, left, top + CONTENT_HEIGHT,
+				0.0F, BOTTOM_BORDER_V, IMAGE_WIDTH, BOTTOM_BORDER_HEIGHT, 256, 256);
+		}
+	}
+
+	private void renderTitle(GuiGraphicsExtractor graphics, ItemStack bundle) {
+		int left = leftPos();
+		int top = topPos();
+		Component fullness = Component.translatable(
+			"screen.hydros_bundles.fullness",
+			Math.round(BundleItem.getFullnessDisplay(bundle) * 100.0F)
+		);
+		int fullnessWidth = font.width(fullness);
+		graphics.text(font, fullness, left + IMAGE_WIDTH - 8 - fullnessWidth, top + 6, LABEL_COLOR, false);
+		int titleWidth = IMAGE_WIDTH - 16 - fullnessWidth - 6;
+		graphics.text(
+			font,
+			Language.getInstance().getVisualOrder(font.substrByWidth(bundle.getHoverName(), titleWidth)),
+			left + 8,
+			top + 6,
+			LABEL_COLOR,
+			false
+		);
+	}
+
 	private void renderContents(
 		GuiGraphicsExtractor graphics,
 		BundleContents contents,
@@ -163,28 +214,22 @@ public final class BundleOverviewScreen extends Screen {
 		List<ItemStackTemplate> items = contents.items();
 		int start = contentPage * pageSize();
 		for (int displayIndex = 0; displayIndex < pageSize(); displayIndex++) {
-			int x = contentLeft() + displayIndex % contentColumns() * SLOT_SIZE;
-			int y = contentTop() + displayIndex / contentColumns() * SLOT_SIZE;
-			renderSlotBackground(graphics, x, y, mouseX, mouseY);
+			int x = contentLeft() + displayIndex % CONTENT_COLUMNS * SLOT_SIZE;
+			int y = contentTop() + displayIndex / CONTENT_COLUMNS * SLOT_SIZE;
 			int contentIndex = start + displayIndex;
-			if (contentIndex >= items.size()) {
-				continue;
-			}
-			ItemStack stack = items.get(contentIndex).create();
-			graphics.item(stack, x + 1, y + 1);
-			graphics.itemDecorations(font, stack, x + 1, y + 1);
-			if (isInside(mouseX, mouseY, x, y)) {
-				graphics.setTooltipForNextFrame(font, stack, mouseX, mouseY);
-			}
+			ItemStack stack = contentIndex < items.size() ? items.get(contentIndex).create() : ItemStack.EMPTY;
+			renderSlot(graphics, stack, x, y, mouseX, mouseY);
 		}
-		int pages = Math.max(1, (items.size() + pageSize() - 1) / pageSize());
-		graphics.text(
-			font,
-			Component.translatable("screen.hydros_bundles.page", contentPage + 1, pages),
-			contentLeft(),
-			contentTop() + CONTENT_ROWS * SLOT_SIZE + 2,
-			0xFFAAAAAA
-		);
+		int pages = pageCount(contents);
+		if (pages > 1) {
+			graphics.centeredText(
+				font,
+				Component.translatable("screen.hydros_bundles.page", contentPage + 1, pages),
+				leftPos() + IMAGE_WIDTH + 11,
+				contentTop() + CONTENT_ROWS * SLOT_SIZE / 2 - 4,
+				0xFFFFFFFF
+			);
+		}
 	}
 
 	private void renderPlayerInventory(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -193,37 +238,45 @@ public final class BundleOverviewScreen extends Screen {
 		}
 		graphics.text(
 			font,
-			Component.translatable("screen.hydros_bundles.player_inventory"),
-			inventoryLeft(),
-			inventoryTop() - 11,
-			0xFFFFFFFF
+			Component.translatable("container.inventory"),
+			leftPos() + 8,
+			topPos() + imageHeight() - 94,
+			LABEL_COLOR,
+			false
 		);
 		for (int displayIndex = 0; displayIndex < BundleInventory.PLAYER_STORAGE_SIZE; displayIndex++) {
-			int x = inventoryLeft() + displayIndex % 9 * SLOT_SIZE;
-			int y = inventoryTop() + displayIndex / 9 * SLOT_SIZE;
-			renderSlotBackground(graphics, x, y, mouseX, mouseY);
-			ItemStack stack = minecraft.player.getInventory().getItem(displayToInventoryIndex(displayIndex));
-			if (!stack.isEmpty()) {
-				graphics.item(stack, x + 1, y + 1);
-				graphics.itemDecorations(font, stack, x + 1, y + 1);
-				if (isInside(mouseX, mouseY, x, y)) {
-					graphics.setTooltipForNextFrame(font, stack, mouseX, mouseY);
-				}
+			int x = inventorySlotX(displayIndex);
+			int y = inventorySlotY(displayIndex);
+			int inventoryIndex = displayToInventoryIndex(displayIndex);
+			if (inventoryIndex == selectedBundleIndex) {
+				graphics.fill(x + 1, y + 1, x + SLOT_SIZE - 1, y + SLOT_SIZE - 1, SELECTED_BUNDLE_COLOR);
 			}
+			renderSlot(graphics, minecraft.player.getInventory().getItem(inventoryIndex), x, y, mouseX, mouseY);
 		}
 	}
 
-	private void renderSlotBackground(
+	private void renderSlot(
 		GuiGraphicsExtractor graphics,
+		ItemStack stack,
 		int x,
 		int y,
 		int mouseX,
 		int mouseY
 	) {
-		graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, isInside(mouseX, mouseY, x, y)
-			? 0x90606060
-			: 0x90404040);
-		graphics.outline(x, y, SLOT_SIZE, SLOT_SIZE, 0xFF888888);
+		boolean hovered = isInside(mouseX, mouseY, x, y);
+		if (hovered) {
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK, x - 3, y - 3, 24, 24);
+		}
+		if (!stack.isEmpty()) {
+			graphics.item(stack, x + 1, y + 1);
+			graphics.itemDecorations(font, stack, x + 1, y + 1);
+		}
+		if (hovered) {
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT, x - 3, y - 3, 24, 24);
+			if (!stack.isEmpty()) {
+				graphics.setTooltipForNextFrame(font, stack, mouseX, mouseY);
+			}
+		}
 	}
 
 	private void withdraw(int contentIndex) {
@@ -405,8 +458,23 @@ public final class BundleOverviewScreen extends Screen {
 		if (bundle == null) {
 			return;
 		}
-		int pages = Math.max(1, (BundleInventory.contents(bundle).size() + pageSize() - 1) / pageSize());
-		contentPage = Math.floorMod(contentPage + direction, pages);
+		contentPage = Math.floorMod(contentPage + direction, pageCount(BundleInventory.contents(bundle)));
+	}
+
+	private void updateButtonStates() {
+		if (previousBundleButton == null || minecraft.player == null) {
+			return;
+		}
+		boolean multipleBundles = BundleInventory.bundleInventoryIndices(minecraft.player.getInventory()).size() > 1;
+		previousBundleButton.active = multipleBundles;
+		nextBundleButton.active = multipleBundles;
+		ItemStack bundle = selectedBundle();
+		boolean multiplePages = bundle != null && pageCount(BundleInventory.contents(bundle)) > 1;
+		previousPageButton.visible = multiplePages;
+		nextPageButton.visible = multiplePages;
+		if (bundle != null) {
+			contentPage = Math.min(contentPage, pageCount(BundleInventory.contents(bundle)) - 1);
+		}
 	}
 
 	private void refreshSelectedBundle() {
@@ -436,28 +504,68 @@ public final class BundleOverviewScreen extends Screen {
 		return BundleInventory.isBundle(stack) ? stack : null;
 	}
 
-	private int contentColumns() {
-		return Math.max(4, Math.min(12, (Math.min(width - 20, 260) - 8) / SLOT_SIZE));
+	private static int pageSize() {
+		return CONTENT_COLUMNS * CONTENT_ROWS;
 	}
 
-	private int pageSize() {
-		return contentColumns() * CONTENT_ROWS;
+	private static int pageCount(BundleContents contents) {
+		return Math.max(1, (contents.size() + pageSize() - 1) / pageSize());
 	}
 
+	private int imageHeight() {
+		return CONTENT_HEIGHT + (HydrosBundlesClient.config().showPlayerInventory
+			? INVENTORY_HEIGHT
+			: BOTTOM_BORDER_HEIGHT);
+	}
+
+	private int leftPos() {
+		return (width - IMAGE_WIDTH) / 2;
+	}
+
+	private int topPos() {
+		return (height - imageHeight()) / 2;
+	}
+
+	// Slot coordinates below are the top-left of the 18x18 slot frame; items render one pixel in.
 	private int contentLeft() {
-		return (width - contentColumns() * SLOT_SIZE) / 2;
+		return leftPos() + 7;
 	}
 
 	private int contentTop() {
-		return 64;
+		return topPos() + 17;
 	}
 
-	private int inventoryLeft() {
-		return (width - 9 * SLOT_SIZE) / 2;
+	private int inventorySlotX(int displayIndex) {
+		return leftPos() + 7 + displayIndex % 9 * SLOT_SIZE;
 	}
 
-	private int inventoryTop() {
-		return 143;
+	private int inventorySlotY(int displayIndex) {
+		int row = displayIndex / 9;
+		// The hotbar row sits 4px below the main inventory, as in vanilla.
+		return topPos() + CONTENT_HEIGHT + 13 + row * SLOT_SIZE + (row == 3 ? 4 : 0);
+	}
+
+	private int contentSlotAt(double mouseX, double mouseY) {
+		int left = contentLeft();
+		int top = contentTop();
+		if (mouseX < left || mouseY < top
+			|| mouseX >= left + CONTENT_COLUMNS * SLOT_SIZE
+			|| mouseY >= top + CONTENT_ROWS * SLOT_SIZE) {
+			return -1;
+		}
+		return (int) ((mouseY - top) / SLOT_SIZE) * CONTENT_COLUMNS
+			+ (int) ((mouseX - left) / SLOT_SIZE);
+	}
+
+	private int inventorySlotAt(double mouseX, double mouseY) {
+		for (int displayIndex = 0; displayIndex < BundleInventory.PLAYER_STORAGE_SIZE; displayIndex++) {
+			int x = inventorySlotX(displayIndex);
+			int y = inventorySlotY(displayIndex);
+			if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
+				return displayIndex;
+			}
+		}
+		return -1;
 	}
 
 	private static int displayToInventoryIndex(int displayIndex) {
@@ -470,23 +578,6 @@ public final class BundleOverviewScreen extends Screen {
 			result.add(displayToInventoryIndex(displayIndex));
 		}
 		return result;
-	}
-
-	private static int slotAt(
-		double mouseX,
-		double mouseY,
-		int left,
-		int top,
-		int columns,
-		int rows
-	) {
-		if (mouseX < left || mouseY < top
-			|| mouseX >= left + columns * SLOT_SIZE
-			|| mouseY >= top + rows * SLOT_SIZE) {
-			return -1;
-		}
-		return (int) ((mouseY - top) / SLOT_SIZE) * columns
-			+ (int) ((mouseX - left) / SLOT_SIZE);
 	}
 
 	private static boolean isInside(int mouseX, int mouseY, int x, int y) {

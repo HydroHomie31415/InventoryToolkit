@@ -74,12 +74,14 @@ public final class ContainerHighlights {
 	}
 
 	public static void show(ContainerMemory.StoredContainer container, String label, int seconds) {
-		highlights.add(new Highlight(
-			container.blockPos(),
-			container.partnerPos(),
-			label,
-			tickCounter + seconds * 20L
-		));
+		show(container.blockPos(), container.partnerPos(), label, seconds);
+	}
+
+	/**
+	 * @param partner the other half of a double chest, or null
+	 */
+	public static void show(BlockPos pos, BlockPos partner, String label, int seconds) {
+		highlights.add(new Highlight(pos, partner, label, tickCounter + seconds * 20L));
 	}
 
 	/**

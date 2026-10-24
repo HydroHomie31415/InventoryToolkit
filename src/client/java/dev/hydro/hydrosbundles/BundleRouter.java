@@ -1,5 +1,6 @@
 package dev.hydro.hydrosbundles;
 
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,7 +22,7 @@ public final class BundleRouter {
 		List<Integer> candidates = new ArrayList<>();
 
 		for (int bundleIndex : BundleInventory.bundleInventoryIndices(inventory)) {
-			if (bundleIndex == sourceIndex) {
+			if (bundleIndex == sourceIndex || SlotLockClient.isLocked(bundleIndex)) {
 				continue;
 			}
 			ItemStack bundle = inventory.getItem(bundleIndex);

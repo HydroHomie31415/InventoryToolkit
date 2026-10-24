@@ -1,6 +1,7 @@
 package dev.luka.stackrefill;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -192,7 +193,7 @@ public final class StackRefillManager {
 		int bestCount = config.sourceStrategy == SourceStrategy.SMALLEST_STACK ? Integer.MAX_VALUE : Integer.MIN_VALUE;
 
 		for (int index = 0; index < Inventory.INVENTORY_SIZE; index++) {
-			if (index == refill.hotbarSlot()) {
+			if (index == refill.hotbarSlot() || SlotLockClient.isLocked(index)) {
 				continue;
 			}
 			boolean hotbar = Inventory.isHotbarSlot(index);

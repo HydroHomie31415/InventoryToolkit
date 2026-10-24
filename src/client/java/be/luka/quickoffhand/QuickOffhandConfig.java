@@ -18,6 +18,7 @@ import net.fabricmc.loader.api.FabricLoader;
 public final class QuickOffhandConfig {
    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("quickoffhand.json");
+   public boolean enabled = true;
    public int maxSlots = 9;
    public boolean fillEmptySlotsFromInventory = true;
    public Map<String, Boolean> categories = defaultCategories();
@@ -80,6 +81,7 @@ public final class QuickOffhandConfig {
    }
 
    public void resetDefaults() {
+      this.enabled = true;
       this.maxSlots = 9;
       this.fillEmptySlotsFromInventory = true;
       this.categories = defaultCategories();

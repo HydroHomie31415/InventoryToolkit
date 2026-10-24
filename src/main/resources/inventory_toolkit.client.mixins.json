@@ -4,7 +4,14 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"AbstractContainerScreenAccessor",
-		"ClientPacketListenerMixin"
+		"ClientPacketListenerMixin",
+		"ContainerScreenMixin",
+		"CreativeModeTabsAccessor",
+		"DropItemMixin",
+		"FabricMenuClientNetworkingMixin",
+		"ItemContainerContentsMixin",
+		"ItemStackMixin",
+		"MerchantScreenAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

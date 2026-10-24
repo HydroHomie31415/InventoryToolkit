@@ -14,6 +14,9 @@ public final class InventoryActionCoordinator {
 	public static final String SHIFT_DRAG_TRANSFER = "shift_drag_transfer";
 	public static final String RECIPE_BOOK = "recipe_book";
 	public static final String QUICK_STACK = "quick_stack";
+	public static final String COMPACT = "compact";
+	public static final String QUICK_TRADE = "quick_trade";
+	public static final String INVENTORY_SORT = "inventory_sort";
 
 	private static String owner;
 

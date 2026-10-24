@@ -1,6 +1,8 @@
 package dev.inventorysweeper;
 
 import dev.luka.inventorytoolkit.InventoryActionCoordinator;
+import dev.luka.inventorytoolkit.dropprotection.DropProtectionClient;
+import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
@@ -81,6 +83,9 @@ public final class InventoryCleaner {
 	}
 
 	public boolean shouldDrop(ItemStack stack) {
+		if (DropProtectionClient.isProtected(stack)) {
+			return false;
+		}
 		if (config.protectCustomNamedItems && stack.has(DataComponents.CUSTOM_NAME)) {
 			return false;
 		}
@@ -213,6 +218,7 @@ public final class InventoryCleaner {
 		for (Slot slot : menu.slots) {
 			if (slot.container == inventory
 				&& slot.getContainerSlot() < Inventory.INVENTORY_SIZE
+				&& !SlotLockClient.isLocked(slot.getContainerSlot())
 				&& slot.hasItem()
 				&& key.matches(slot.getItem())) {
 				return slot;
