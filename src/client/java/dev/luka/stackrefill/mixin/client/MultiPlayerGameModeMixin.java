@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,6 +30,39 @@ public abstract class MultiPlayerGameModeMixin {
 		BlockHitResult blockHit,
 		CallbackInfoReturnable<InteractionResult> callback
 	) {
+		stackRefill$capture(player, hand);
+	}
+
+	@Inject(method = "useItemOn", at = @At("RETURN"))
+	private void stackRefill$detectUse(
+		LocalPlayer player,
+		InteractionHand hand,
+		BlockHitResult blockHit,
+		CallbackInfoReturnable<InteractionResult> callback
+	) {
+		stackRefill$detectUse(player, hand, callback.getReturnValue());
+	}
+
+	@Inject(method = "useItem", at = @At("HEAD"))
+	private void stackRefill$captureItemUse(
+		Player player,
+		InteractionHand hand,
+		CallbackInfoReturnable<InteractionResult> callback
+	) {
+		stackRefill$capture(player, hand);
+	}
+
+	@Inject(method = "useItem", at = @At("RETURN"))
+	private void stackRefill$detectItemUse(
+		Player player,
+		InteractionHand hand,
+		CallbackInfoReturnable<InteractionResult> callback
+	) {
+		stackRefill$detectUse(player, hand, callback.getReturnValue());
+	}
+
+	@Unique
+	private void stackRefill$capture(Player player, InteractionHand hand) {
 		if (hand != InteractionHand.MAIN_HAND) {
 			stackRefill$clear();
 			return;
@@ -40,18 +74,13 @@ public abstract class MultiPlayerGameModeMixin {
 		stackRefill$hotbarSlot = player.getInventory().getSelectedSlot();
 	}
 
-	@Inject(method = "useItemOn", at = @At("RETURN"))
-	private void stackRefill$detectUse(
-		LocalPlayer player,
-		InteractionHand hand,
-		BlockHitResult blockHit,
-		CallbackInfoReturnable<InteractionResult> callback
-	) {
+	@Unique
+	private void stackRefill$detectUse(Player player, InteractionHand hand, InteractionResult result) {
 		try {
 			if (hand != InteractionHand.MAIN_HAND
 				|| stackRefill$before.isEmpty()
 				|| stackRefill$hotbarSlot < 0
-				|| !callback.getReturnValue().consumesAction()) {
+				|| !result.consumesAction()) {
 				return;
 			}
 

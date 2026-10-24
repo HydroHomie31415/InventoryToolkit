@@ -12,6 +12,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CushionItem;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
@@ -38,7 +39,8 @@ public final class StackRefillManager {
 			|| beforeCount <= afterCount
 			|| afterCount > config.refillAtCount
 			|| !config.isHotbarSlotEnabled(hotbarSlot)
-			|| config.onlyBlockItems && !(before.getItem() instanceof BlockItem)
+			|| config.onlyBlockItems
+				&& !(before.getItem() instanceof BlockItem || before.getItem() instanceof CushionItem)
 			|| !config.allowWhileSneaking && player.isShiftKeyDown()
 			|| !passesItemRules(before)) {
 			return;
