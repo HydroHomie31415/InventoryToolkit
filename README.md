@@ -43,7 +43,9 @@ mods for Minecraft 26.3:
   was last seen, can be picked with the arrow keys and Enter, and items found
   only in another dimension are pointed out. **Scan Nearby** refreshes every
   container within reach without showing their screens.
-- **Hotbar Loadouts** — five configurable, rule-based hotbar presets.
+- **Hotbar Loadouts** — five configurable, rule-based hotbar presets. The
+  first preset defaults to a pickaxe, axe, weapon, shovel, hoe, water bucket,
+  two building-block stacks, and food, in that order.
 - **Offhand Swapper** — opens a configurable secondary hotbar for quickly
   swapping inventory items into the offhand.
 - **Auto Tool Switch** — selects the best eligible hotbar tool before mining,

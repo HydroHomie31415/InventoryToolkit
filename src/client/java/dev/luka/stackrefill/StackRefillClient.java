@@ -68,6 +68,12 @@ public final class StackRefillClient implements ClientModInitializer {
 		}
 	}
 
+	public static void onServerConsumedUse(ItemStack before, int hotbarSlot, int count) {
+		if (manager != null) {
+			manager.onServerConsumedUse(before, hotbarSlot, count);
+		}
+	}
+
 	public static void setEnabled(boolean enabled) {
 		config.enabled = enabled;
 		config.save();

@@ -101,6 +101,8 @@ public abstract class MultiPlayerGameModeMixin {
 					stackRefill$beforeCount,
 					afterCount
 				);
+			} else if (afterCount == stackRefill$beforeCount) {
+				StackRefillClient.onServerConsumedUse(stackRefill$before, stackRefill$hotbarSlot, afterCount);
 			}
 		} finally {
 			stackRefill$clear();

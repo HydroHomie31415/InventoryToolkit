@@ -9,6 +9,8 @@ public enum LoadoutRule {
     BEST_PICKAXE,
     BEST_AXE,
     BEST_WEAPON,
+    BEST_SHOVEL,
+    BEST_HOE,
     WATER_BUCKET,
     BUILDING_BLOCKS,
     BEST_FOOD;

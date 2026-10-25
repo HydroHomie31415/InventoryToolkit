@@ -151,6 +151,22 @@ public final class QuickStackConfigScreen {
 				.distinct()
 				.collect(Collectors.toCollection(ArrayList::new)))
 			.build());
+		sort.addEntry(entries.startStrList(
+				Component.translatable("config.inventory_toolkit.quick_stack.sort_uncategorized_items"),
+				config.sortUncategorizedItems
+			)
+			.setDefaultValue(List.of())
+			.setExpanded(true)
+			.setInsertInFront(false)
+			.setTooltip(Component.translatable(
+				"config.inventory_toolkit.quick_stack.sort_uncategorized_items.tooltip"
+			))
+			.setSaveConsumer(values -> config.sortUncategorizedItems = values.stream()
+				.map(String::trim)
+				.filter(value -> !value.isEmpty())
+				.distinct()
+				.collect(Collectors.toCollection(ArrayList::new)))
+			.build());
 
 		builder.setSavingRunnable(() -> {
 			QuickStackClient.nearby().cancel();

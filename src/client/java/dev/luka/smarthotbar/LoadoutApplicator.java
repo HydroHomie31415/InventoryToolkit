@@ -122,6 +122,12 @@ public final class LoadoutApplicator {
             case BEST_WEAPON -> stack.has(DataComponents.WEAPON)
                     ? weaponScore(stack)
                     : Double.NEGATIVE_INFINITY;
+            case BEST_SHOVEL -> stack.is(ItemTags.SHOVELS)
+                    ? toolScore(stack, Blocks.DIRT.defaultBlockState())
+                    : Double.NEGATIVE_INFINITY;
+            case BEST_HOE -> stack.is(ItemTags.HOES)
+                    ? toolScore(stack, Blocks.HAY_BLOCK.defaultBlockState())
+                    : Double.NEGATIVE_INFINITY;
             case WATER_BUCKET -> stack.is(Items.WATER_BUCKET) ? 1 : Double.NEGATIVE_INFINITY;
             case BUILDING_BLOCKS -> buildingBlockScore(stack);
             case BEST_FOOD -> foodScore(stack);

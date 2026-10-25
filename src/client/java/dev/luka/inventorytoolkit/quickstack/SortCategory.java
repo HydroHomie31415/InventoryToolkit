@@ -13,9 +13,9 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * The kinds of chest that nearby sorting fills. Items that fit none of them
- * (wool, dyes, glass, shulker boxes, ...) are never moved unless a
- * custom rule gives them a category.
+ * The kinds of chest that nearby sorting fills. Vanilla items have a home
+ * category, with shulker boxes and bundles intentionally left alone; unknown
+ * items from other mods stay put until given a custom rule.
  */
 public enum SortCategory {
 	WOOD("wood", "wood", "log", "timber", "tree"),
@@ -23,15 +23,23 @@ public enum SortCategory {
 	REDSTONE("redstone", "redstone"),
 	MOB_DROPS("mob_drops", "mobdrops", "mob", "drops", "loot"),
 	FARMING("farming", "farm", "food", "crop"),
+	NATURE("nature", "nature", "plants", "flowers"),
+	BUILDING("building", "building", "build", "blocks"),
+	DECORATION("decoration", "decoration", "decor", "furniture"),
+	LIGHTING("lighting", "lighting", "light"),
+	TRANSPORT("transport", "transport", "vehicles"),
+	UTILITY("utility", "utility", "utilities", "workstations"),
 	NETHER("nether", "nether"),
 	END("end", "end"),
 	EQUIPMENT("equipment", "equipment", "gear", "tool", "armor", "armour", "weapon", "combat"),
-	VALUABLES("valuables", "valuable", "ore", "ingot", "gem", "mineral", "treasure");
+	VALUABLES("valuables", "valuable", "ore", "ingot", "gem", "mineral", "treasure"),
+	MISCELLANEOUS("miscellaneous", "misc", "miscellaneous", "other");
 
 	private static final Set<String> VALUABLE_IDS = Set.of(
 		"diamond", "emerald", "lapis_lazuli", "quartz", "amethyst_shard", "coal", "netherite_scrap",
 		"ancient_debris", "iron_block", "gold_block", "copper_block", "diamond_block", "emerald_block",
-		"lapis_block", "netherite_block", "coal_block"
+		"lapis_block", "netherite_block", "coal_block", "sulfur", "potent_sulfur", "cinnabar",
+		"heart_of_the_sea", "echo_shard", "disc_fragment_5"
 	);
 
 	private static final Set<String> WOOD_IDS = Set.of(
@@ -55,8 +63,27 @@ public enum SortCategory {
 	private static final Set<String> FARMING_IDS = Set.of(
 		"wheat", "sugar_cane", "sugar", "cactus", "pumpkin", "carved_pumpkin", "melon", "hay_block",
 		"cocoa_beans", "kelp", "dried_kelp_block", "honeycomb", "honey_bottle", "honey_block", "cake",
-		"lily_pad", "vine", "composter", "pitcher_pod", "sea_pickle", "moss_block", "moss_carpet",
-		"bone_meal"
+		"composter", "pitcher_pod", "sea_pickle", "bone_meal"
+	);
+	private static final List<String> NATURE_PARTS = List.of(
+		"flower", "tulip", "orchid", "daisy", "cornflower", "eyeblossom", "shrub", "bush", "grass",
+		"fern", "sapling", "propagule", "mushroom", "fungus", "dripleaf", "coral", "seagrass",
+		"hanging_roots", "leaf_litter", "pink_petals", "wildflowers", "azalea", "lily_pad", "moss_"
+	);
+	private static final List<String> DECORATION_PARTS = List.of(
+		"_bed", "banner", "carpet", "painting", "item_frame", "flower_pot", "decorated_pot",
+		"pottery_sherd", "_candle"
+	);
+	private static final List<String> LIGHTING_PARTS = List.of(
+		"torch", "lantern", "sea_lantern", "froglight", "campfire", "jack_o_lantern", "glow_lichen"
+	);
+	private static final List<String> UTILITY_PARTS = List.of(
+		"furnace", "smoker", "blast_furnace", "crafting_table", "cartography_table", "fletching_table",
+		"smithing_table", "loom", "brewing_stand", "cauldron", "anvil", "lectern", "jukebox", "spawner",
+		"beacon", "conduit", "hopper", "dispenser", "dropper", "crafter", "observer", "repeater",
+		"comparator", "sculk_sensor", "daylight_detector", "command_block", "structure_block", "jigsaw",
+		"minecart", "bucket", "potion", "map", "compass", "clock", "spyglass", "book", "paper", "lead",
+		"name_tag", "brush", "bundle", "trial_key", "ominous_bottle", "experience_bottle", "fire_charge"
 	);
 	private static final List<String> STONE_PARTS = List.of(
 		"stone", "cobble", "deepslate", "granite", "diorite", "andesite", "tuff", "calcite", "brick",
@@ -136,6 +163,7 @@ public enum SortCategory {
 			return WOOD;
 		}
 		if (MOB_DROP_IDS.contains(path)
+			|| path.endsWith("_spawn_egg")
 			|| stack.is(ItemTags.SKULLS)
 			|| stack.is(ItemTags.CREEPER_DROP_MUSIC_DISCS)) {
 			return MOB_DROPS;
@@ -145,6 +173,18 @@ public enum SortCategory {
 		}
 		if (containsAny(path, END_PARTS)) {
 			return END;
+		}
+		if (isDecoration(path)) {
+			return DECORATION;
+		}
+		if (isNature(stack, path)) {
+			return NATURE;
+		}
+		if (containsAny(path, LIGHTING_PARTS)) {
+			return LIGHTING;
+		}
+		if (path.endsWith("_minecart") || path.equals("minecart")) {
+			return TRANSPORT;
 		}
 		if (isFarming(stack, path)) {
 			return FARMING;
@@ -157,7 +197,52 @@ public enum SortCategory {
 			|| stack.is(ItemTags.MUD)) {
 			return STONE;
 		}
+		if (containsAny(path, UTILITY_PARTS)) {
+			return UTILITY;
+		}
+		if (stack.getItem() instanceof BlockItem || isBuildingMaterial(path)) {
+			return BUILDING;
+		}
+		if (BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals("minecraft")) {
+			return MISCELLANEOUS;
+		}
 		return null;
+	}
+
+	private static boolean isDecoration(String path) {
+		return containsAny(path, DECORATION_PARTS)
+			|| path.equals("glass")
+			|| path.equals("tinted_glass")
+			|| path.equals("glass_pane")
+			|| path.endsWith("_stained_glass")
+			|| path.endsWith("_stained_glass_pane")
+			|| path.endsWith("_banner_pattern");
+	}
+
+	private static boolean isNature(ItemStack stack, String path) {
+		return containsAny(path, NATURE_PARTS)
+			|| stack.is(ItemTags.SAPLINGS)
+			|| stack.is(ItemTags.MUSHROOMS);
+	}
+
+	private static boolean isBuildingMaterial(String path) {
+		return path.endsWith("_wool")
+			|| path.endsWith("_concrete")
+			|| path.endsWith("_concrete_powder")
+			|| path.endsWith("_terracotta")
+			|| path.endsWith("_glazed_terracotta")
+			|| path.equals("terracotta")
+			|| path.equals("sponge")
+			|| path.equals("wet_sponge")
+			|| path.equals("ice")
+			|| path.equals("packed_ice")
+			|| path.equals("blue_ice")
+			|| path.equals("snow")
+			|| path.equals("snow_block")
+			|| path.contains("coral")
+			|| path.contains("prismarine")
+			|| path.startsWith("sculk")
+			|| path.startsWith("resin_");
 	}
 
 	private static boolean isEquipment(ItemStack stack, String path) {
@@ -209,7 +294,6 @@ public enum SortCategory {
 			|| stack.is(ItemTags.SAPLINGS)
 			|| stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)
 			|| stack.is(ItemTags.BEE_FOOD)
-			|| stack.is(ItemTags.MUSHROOMS)
 			|| stack.is(ItemTags.EGGS)
 			|| stack.is(ItemTags.FISHES);
 	}

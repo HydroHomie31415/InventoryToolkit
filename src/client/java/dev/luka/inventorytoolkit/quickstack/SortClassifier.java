@@ -37,6 +37,16 @@ public final class SortClassifier {
 	}
 
 	/**
+	 * Whether this stack has no built-in or custom category. Explicit "none"
+	 * rules are intentional exclusions, so they are not recorded as unknown.
+	 */
+	public boolean isUncategorized(ItemStack stack) {
+		return !stack.isEmpty()
+			&& !overrides.containsKey(stack.getItem())
+			&& SortCategory.classify(stack) == null;
+	}
+
+	/**
 	 * @return the parsed rule, or null when the item or category is unknown
 	 */
 	public static Rule parseRule(String rule) {

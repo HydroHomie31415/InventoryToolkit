@@ -44,6 +44,7 @@ public final class QuickStackConfig {
 	public boolean sortInventory = true;
 	public boolean sortIncludeBackpack = true;
 	public List<String> sortRules = new ArrayList<>();
+	public List<String> sortUncategorizedItems = new ArrayList<>();
 
 	public static QuickStackConfig load() {
 		if (!Files.exists(CONFIG_PATH)) {
@@ -102,5 +103,17 @@ public final class QuickStackConfig {
 		if (sortRules == null) {
 			sortRules = new ArrayList<>();
 		}
+		if (sortUncategorizedItems == null) {
+			sortUncategorizedItems = new ArrayList<>();
+		}
+	}
+
+	/** Remembers an item id the first time sorting finds no category for it. */
+	public void rememberUncategorized(String itemId) {
+		if (sortUncategorizedItems.contains(itemId)) {
+			return;
+		}
+		sortUncategorizedItems.add(itemId);
+		save();
 	}
 }

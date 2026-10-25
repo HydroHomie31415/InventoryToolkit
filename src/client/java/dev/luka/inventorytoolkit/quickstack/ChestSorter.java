@@ -4,6 +4,7 @@ import dev.luka.inventorytoolkit.slotlock.SlotLockClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -49,6 +50,7 @@ final class ChestSorter {
 
 	private final Minecraft client;
 	private final SortClassifier classifier;
+	private final QuickStackConfig config;
 	private final boolean useChestNames;
 	private final boolean sortInventory;
 	private final boolean includeHotbar;
@@ -65,6 +67,7 @@ final class ChestSorter {
 
 	ChestSorter(Minecraft client, List<BlockPos> containers, QuickStackConfig config) {
 		this.client = client;
+		this.config = config;
 		this.classifier = new SortClassifier(config.sortRules);
 		this.useChestNames = config.sortUseChestNames;
 		this.sortInventory = config.sortInventory;
@@ -109,6 +112,7 @@ final class ChestSorter {
 		if (!scanned) {
 			SortedChest chest = new SortedChest(false);
 			chest.update(menu);
+			rememberUncategorized(chest.items);
 			if (useChestNames) {
 				chest.category = SortCategory.fromContainerName(title.getString());
 			}
@@ -146,6 +150,9 @@ final class ChestSorter {
 			withdraw(menu, backpack);
 		}
 		backpack.update(menu);
+		if (!scanned) {
+			rememberUncategorized(backpack.items);
+		}
 	}
 
 	/**
@@ -286,6 +293,7 @@ final class ChestSorter {
 		}
 		Inventory inventory = client.player.getInventory();
 		for (int inventorySlot = 0; inventorySlot < Inventory.INVENTORY_SIZE; inventorySlot++) {
+			rememberUncategorized(inventory.getItem(inventorySlot));
 			if (isSortableInventorySlot(inventorySlot)) {
 				ItemStack stack = inventory.getItem(inventorySlot);
 				totals.merge(classifier.classify(stack), stack.getCount(), Integer::sum);
@@ -337,6 +345,18 @@ final class ChestSorter {
 				break;
 			}
 			spare.category = overflowing;
+		}
+	}
+
+	private void rememberUncategorized(List<ItemStack> stacks) {
+		for (ItemStack stack : stacks) {
+			rememberUncategorized(stack);
+		}
+	}
+
+	private void rememberUncategorized(ItemStack stack) {
+		if (classifier.isUncategorized(stack)) {
+			config.rememberUncategorized(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
 		}
 	}
 

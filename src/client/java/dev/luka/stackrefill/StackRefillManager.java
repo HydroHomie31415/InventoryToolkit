@@ -19,8 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class StackRefillManager {
+	// Long enough to cover the server's slot sync on a laggy connection.
+	private static final int SERVER_CONSUMPTION_WATCH_TICKS = 40;
+
 	private final Minecraft client;
 	private final Map<Integer, PendingRefill> pendingByHotbarSlot = new HashMap<>();
+	private final Map<Integer, ServerConsumptionWatch> watchesByHotbarSlot = new HashMap<>();
 	private StackRefillConfig config;
 	private LocalPlayer trackedPlayer;
 	private long tickCounter;
@@ -58,6 +62,21 @@ public final class StackRefillManager {
 		);
 	}
 
+	/**
+	 * Some items (e.g. cushions) only shrink their stack on the server, so the client sees the
+	 * count drop when the slot sync arrives rather than when the use returns.
+	 */
+	public void onServerConsumedUse(ItemStack before, int hotbarSlot, int count) {
+		long expiresAtTick = tickCounter + SERVER_CONSUMPTION_WATCH_TICKS;
+		watchesByHotbarSlot.merge(
+			hotbarSlot,
+			new ServerConsumptionWatch(before.copyWithCount(1), count, expiresAtTick),
+			(oldValue, newValue) -> oldValue.matches(newValue.sample())
+				? new ServerConsumptionWatch(oldValue.sample(), oldValue.lastCount(), expiresAtTick)
+				: newValue
+		);
+	}
+
 	public void tick() {
 		tickCounter++;
 		LocalPlayer player = client.player;
@@ -71,8 +90,10 @@ public final class StackRefillManager {
 		}
 		if (!config.enabled || player.isSpectator()) {
 			pendingByHotbarSlot.clear();
+			watchesByHotbarSlot.clear();
 			return;
 		}
+		checkServerConsumption(player);
 		if (tickCounter < nextActionTick || config.pauseWhileScreenOpen && client.gui.screen() != null) {
 			return;
 		}
@@ -99,6 +120,36 @@ public final class StackRefillManager {
 
 	public void clearPending() {
 		pendingByHotbarSlot.clear();
+		watchesByHotbarSlot.clear();
+	}
+
+	private void checkServerConsumption(LocalPlayer player) {
+		if (watchesByHotbarSlot.isEmpty()) {
+			return;
+		}
+
+		Inventory inventory = player.getInventory();
+		var iterator = watchesByHotbarSlot.entrySet().iterator();
+		while (iterator.hasNext()) {
+			var entry = iterator.next();
+			int hotbarSlot = entry.getKey();
+			ServerConsumptionWatch watch = entry.getValue();
+			ItemStack current = inventory.getItem(hotbarSlot);
+			if (!current.isEmpty() && !watch.matches(current)) {
+				iterator.remove();
+				continue;
+			}
+
+			int currentCount = current.getCount();
+			if (currentCount < watch.lastCount()) {
+				onStackUsed(watch.sample(), hotbarSlot, watch.lastCount(), currentCount);
+			}
+			if (current.isEmpty() || watch.expiresAtTick() <= tickCounter) {
+				iterator.remove();
+			} else if (currentCount != watch.lastCount()) {
+				entry.setValue(new ServerConsumptionWatch(watch.sample(), currentCount, watch.expiresAtTick()));
+			}
+		}
 	}
 
 	private void perform(LocalPlayer player, PendingRefill refill) {
@@ -257,7 +308,14 @@ public final class StackRefillManager {
 	private void reset(LocalPlayer player) {
 		trackedPlayer = player;
 		pendingByHotbarSlot.clear();
+		watchesByHotbarSlot.clear();
 		nextActionTick = 0;
+	}
+
+	private record ServerConsumptionWatch(ItemStack sample, int lastCount, long expiresAtTick) {
+		private boolean matches(ItemStack stack) {
+			return ItemStack.isSameItemSameComponents(sample, stack);
+		}
 	}
 
 	private record PendingRefill(ItemStack sample, int hotbarSlot, long readyAtTick) {

@@ -20,9 +20,9 @@ public final class LoadoutConfig {
             LoadoutRule.BEST_PICKAXE,
             LoadoutRule.BEST_AXE,
             LoadoutRule.BEST_WEAPON,
+            LoadoutRule.BEST_SHOVEL,
+            LoadoutRule.BEST_HOE,
             LoadoutRule.WATER_BUCKET,
-            LoadoutRule.BUILDING_BLOCKS,
-            LoadoutRule.BUILDING_BLOCKS,
             LoadoutRule.BUILDING_BLOCKS,
             LoadoutRule.BUILDING_BLOCKS,
             LoadoutRule.BEST_FOOD
