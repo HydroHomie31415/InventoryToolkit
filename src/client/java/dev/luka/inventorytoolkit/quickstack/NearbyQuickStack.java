@@ -9,12 +9,14 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
@@ -32,6 +34,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -47,14 +50,17 @@ import java.util.Set;
  * {@link ChestSorter}. A sort preview only runs the first, reading round and
  * labels every container with the category it would get. A sort also opens
  * the player's Traveler's Backpack, if any, before the containers of a round
- * (see FabricMenuClientNetworkingMixin).
+ * (see FabricMenuClientNetworkingMixin). A fetch takes wanted items out of
+ * the containers, visiting those remembered to hold them first (see
+ * {@link StorageFetch}).
  */
 public final class NearbyQuickStack {
 	public enum Mode {
 		QUICK_STACK,
 		SCAN,
 		SORT,
-		SORT_PREVIEW;
+		SORT_PREVIEW,
+		FETCH;
 
 		private String key() {
 			return name().toLowerCase(Locale.ROOT);
@@ -87,6 +93,8 @@ public final class NearbyQuickStack {
 	private int round;
 	private int roundTotal;
 	private int roundVisited;
+	private Map<Item, Integer> wanted = Map.of();
+	private boolean inventoryFull;
 	private long previewConfirmUntilTick = -1;
 	private boolean previewHighlightsShown;
 
@@ -120,6 +128,19 @@ public final class NearbyQuickStack {
 
 	public void start(QuickStackConfig config) {
 		start(config, Mode.QUICK_STACK, null);
+	}
+
+	/**
+	 * Takes the wanted items out of the containers within reach.
+	 *
+	 * @param wanted item to the number of items still needed
+	 */
+	public void startFetch(QuickStackConfig config, Map<Item, Integer> wanted) {
+		if (running) {
+			return;
+		}
+		this.wanted = new HashMap<>(wanted);
+		start(config, Mode.FETCH, null);
 	}
 
 	/**
@@ -166,10 +187,20 @@ public final class NearbyQuickStack {
 		if (sorting && !config.sortIncludeShulkerBoxes) {
 			containers.removeIf(pos -> client.level.getBlockEntity(pos) instanceof ShulkerBoxBlockEntity);
 		}
+		if (mode == Mode.FETCH) {
+			containers = fetchOrder(containers);
+		}
 		pendingContainers.clear();
 		pendingContainers.addAll(containers);
 		if (pendingContainers.isEmpty()) {
-			explain(Component.translatable("message.inventory_toolkit.quick_stack.no_containers"));
+			if (mode == Mode.FETCH) {
+				// Say what is missing and outline where it is stored instead.
+				itemsMoved = 0;
+				inventoryFull = false;
+				notifyFetchFinished();
+			} else {
+				explain(Component.translatable("message.inventory_toolkit.quick_stack.no_containers"));
+			}
 			return;
 		}
 		sorter = sorting ? new ChestSorter(client, containers, config) : null;
@@ -188,6 +219,7 @@ public final class NearbyQuickStack {
 		containersFilled = 0;
 		containersScanned = 0;
 		itemsMoved = 0;
+		inventoryFull = false;
 		round = 0;
 		roundTotal = containers.size();
 		roundVisited = 0;
@@ -215,6 +247,7 @@ public final class NearbyQuickStack {
 		silentMenuIsBackpack = false;
 		sorter = null;
 		pendingContainers.clear();
+		wanted = Map.of();
 		backpackQueued = false;
 		openingBackpack = false;
 		running = false;
@@ -312,6 +345,17 @@ public final class NearbyQuickStack {
 						containersFilled++;
 						itemsMoved += moved;
 					}
+				} else if (mode == Mode.FETCH) {
+					StorageFetch.Taken taken = StorageFetch.take(client, silentMenu, wanted);
+					if (taken.items() > 0) {
+						containersFilled++;
+						itemsMoved += taken.items();
+					}
+					// Nothing more to carry, or nothing more to look for.
+					if (taken.inventoryFull() || missingItems().isEmpty()) {
+						inventoryFull = taken.inventoryFull();
+						pendingContainers.clear();
+					}
 				} else if (sorter != null) {
 					sorter.visit(openingPos, silentMenu, silentMenuTitle, contentsArrived);
 				}
@@ -405,6 +449,8 @@ public final class NearbyQuickStack {
 			notifySortFinished(config);
 		} else if (mode == Mode.SORT_PREVIEW) {
 			showSortPreview();
+		} else if (mode == Mode.FETCH) {
+			notifyFetchFinished();
 		} else if (itemsMoved > 0) {
 			notifyPlayer(config, Component.translatable(
 				"message.inventory_toolkit.quick_stack.finished",
@@ -420,6 +466,70 @@ public final class NearbyQuickStack {
 		if (callback != null) {
 			callback.run();
 		}
+	}
+
+	/**
+	 * Always shown: the player asked for these items and needs to know what
+	 * is still missing. Containers out of reach that hold missing items are
+	 * outlined.
+	 */
+	private void notifyFetchFinished() {
+		Set<Item> missing = missingItems();
+		wanted = Map.of();
+		if (missing.isEmpty()) {
+			explain(Component.translatable("message.inventory_toolkit.fetch.finished", itemsMoved, containersFilled));
+			return;
+		}
+		if (inventoryFull) {
+			explain(Component.translatable("message.inventory_toolkit.fetch.inventory_full", itemsMoved, containersFilled));
+			return;
+		}
+		int elsewhere = ContainerHighlights.showItems(missing, QuickStackClient.config().highlightSeconds);
+		explain(elsewhere > 0
+			? Component.translatable("message.inventory_toolkit.fetch.missing_elsewhere", itemsMoved, missing.size(), elsewhere)
+			: Component.translatable("message.inventory_toolkit.fetch.missing", itemsMoved, missing.size()));
+	}
+
+	private Set<Item> missingItems() {
+		Set<Item> missing = new HashSet<>();
+		for (Map.Entry<Item, Integer> entry : wanted.entrySet()) {
+			if (entry.getValue() > 0) {
+				missing.add(entry.getKey());
+			}
+		}
+		return missing;
+	}
+
+	/**
+	 * Containers remembered to hold a wanted item come first, then those never
+	 * opened; containers remembered to hold none of them are skipped.
+	 */
+	private List<BlockPos> fetchOrder(List<BlockPos> containers) {
+		Set<String> wantedIds = new HashSet<>();
+		for (Item item : wanted.keySet()) {
+			wantedIds.add(BuiltInRegistries.ITEM.getKey(item).toString());
+		}
+		Map<BlockPos, Boolean> holdsWanted = new HashMap<>();
+		for (ContainerMemory.StoredContainer container : ContainerMemory.containersInCurrentDimension()) {
+			boolean holds = container.items().stream()
+				.anyMatch(stack -> !stack.nested() && wantedIds.contains(stack.item()));
+			holdsWanted.put(container.blockPos(), holds);
+			if (container.partnerPos() != null) {
+				holdsWanted.put(container.partnerPos(), holds);
+			}
+		}
+		List<BlockPos> known = new ArrayList<>();
+		List<BlockPos> unknown = new ArrayList<>();
+		for (BlockPos pos : containers) {
+			Boolean holds = holdsWanted.get(pos);
+			if (holds == null) {
+				unknown.add(pos);
+			} else if (holds) {
+				known.add(pos);
+			}
+		}
+		known.addAll(unknown);
+		return known;
 	}
 
 	private void notifySortFinished(QuickStackConfig config) {
@@ -489,6 +599,7 @@ public final class NearbyQuickStack {
 			case QUICK_STACK -> config.enabled && config.nearbyEnabled;
 			case SCAN -> config.memoryEnabled;
 			case SORT, SORT_PREVIEW -> config.sortEnabled;
+			case FETCH -> true;
 		};
 	}
 

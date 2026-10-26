@@ -22,7 +22,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Shows highlighted containers in two ways:
@@ -91,13 +94,27 @@ public final class ContainerHighlights {
 	 * @return the number of containers highlighted
 	 */
 	public static int showItem(Item item, int seconds) {
-		String itemId = BuiltInRegistries.ITEM.getKey(item).toString();
+		return showItems(List.of(item), seconds);
+	}
+
+	/**
+	 * Outlines every remembered container in this dimension holding any of the
+	 * items. With a single item the label is its count, otherwise the number
+	 * of matching items.
+	 *
+	 * @return the number of containers highlighted
+	 */
+	public static int showItems(Collection<Item> items, int seconds) {
+		Set<String> itemIds = new HashSet<>();
+		for (Item item : items) {
+			itemIds.add(BuiltInRegistries.ITEM.getKey(item).toString());
+		}
 		clear();
 		int containers = 0;
 		for (ContainerMemory.StoredContainer container : ContainerMemory.containersInCurrentDimension()) {
 			int count = 0;
 			for (ContainerMemory.StoredStack stack : container.items()) {
-				if (stack.item().equals(itemId)) {
+				if (itemIds.contains(stack.item())) {
 					count += stack.count();
 				}
 			}
@@ -106,7 +123,7 @@ public final class ContainerHighlights {
 				containers++;
 			}
 		}
-		InventoryToolkitClient.LOGGER.info("Highlighting {} containers holding {}", containers, itemId);
+		InventoryToolkitClient.LOGGER.info("Highlighting {} containers holding {}", containers, itemIds);
 		return containers;
 	}
 

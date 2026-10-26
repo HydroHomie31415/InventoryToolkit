@@ -1,9 +1,14 @@
 package dev.luka.inventorytoolkit.inventorysort;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Comparator;
@@ -13,6 +18,8 @@ import java.util.List;
  * Sorts a group of slots with ordinary left clicks, as a player would: first
  * partial stacks of the same item are merged, then every slot in turn
  * receives the stack that belongs there, swapped in from further along.
+ * Stacks such as bundles and backpacks, which take in items clicked onto
+ * them, are swapped through the offhand instead.
  */
 final class InventorySorter {
 	enum Result {
@@ -21,6 +28,13 @@ final class InventorySorter {
 		/** The menu stopped matching what the clicks should have done. */
 		INTERRUPTED
 	}
+
+	private static final ClassValue<Boolean> CLICK_BEHAVIOUR = new ClassValue<>() {
+		@Override
+		protected Boolean computeValue(Class<?> type) {
+			return overridesClicks(type);
+		}
+	};
 
 	private final Minecraft client;
 	private final AbstractContainerMenu menu;
@@ -57,13 +71,20 @@ final class InventorySorter {
 			if (source == null) {
 				return Result.INTERRUPTED;
 			}
-			// A different item swaps with the carried stack; a partial stack of
-			// the same item fills up and leaves the rest on the cursor. Either
-			// way the leftover goes back where the carried stack came from.
-			click(source);
-			click(target);
-			if (!menu.getCarried().isEmpty()) {
+			if (hasClickBehaviour(source.getItem()) || hasClickBehaviour(target.getItem())) {
+				if (!swapThroughOffhand(source, target)) {
+					return Result.INTERRUPTED;
+				}
+			} else {
+				// A different item swaps with the carried stack; a partial stack
+				// of the same item fills up and leaves the rest on the cursor.
+				// Either way the leftover goes back where the carried stack
+				// came from.
 				click(source);
+				click(target);
+				if (!menu.getCarried().isEmpty()) {
+					click(source);
+				}
 			}
 			if (!menu.getCarried().isEmpty() || !matches(target.getItem(), want)) {
 				returnCarried();
@@ -82,7 +103,9 @@ final class InventorySorter {
 			Slot target = slots.get(index);
 			for (int later = index + 1; later < slots.size() && canTakeMore(target); later++) {
 				Slot source = slots.get(later);
-				if (!source.hasItem() || !ItemStack.isSameItemSameComponents(target.getItem(), source.getItem())) {
+				if (!source.hasItem()
+					|| !ItemStack.isSameItemSameComponents(target.getItem(), source.getItem())
+					|| hasClickBehaviour(source.getItem())) {
 					continue;
 				}
 				click(source);
@@ -128,16 +151,74 @@ final class InventorySorter {
 		}
 	}
 
+	/**
+	 * Swaps two stacks by way of the offhand, as the offhand key does, so
+	 * neither stack's own click behaviour comes into play. The offhand ends up
+	 * holding what it held before.
+	 *
+	 * @return whether the offhand could hold both stacks in turn
+	 */
+	private boolean swapThroughOffhand(Slot source, Slot target) {
+		ItemStack offhand = client.player.getInventory().getItem(Inventory.SLOT_OFFHAND);
+		if (!offhand.isEmpty() && !(fits(source, offhand) && fits(target, offhand))) {
+			return false;
+		}
+		ItemStack sourceItem = source.getItem();
+		if (!fits(target, sourceItem) || !fits(source, target.getItem())) {
+			return false;
+		}
+		swapWithOffhand(source);
+		swapWithOffhand(target);
+		swapWithOffhand(source);
+		return true;
+	}
+
+	private static boolean fits(Slot slot, ItemStack stack) {
+		return stack.isEmpty() || (slot.mayPlace(stack) && stack.getCount() <= slot.getMaxStackSize(stack));
+	}
+
+	private void swapWithOffhand(Slot slot) {
+		clicked = true;
+		client.gameMode.handleContainerInput(
+			menu.containerId,
+			slot.index,
+			Inventory.SLOT_OFFHAND,
+			ContainerInput.SWAP,
+			client.player
+		);
+	}
+
 	private void click(Slot slot) {
 		clicked = true;
-		// A left click with a bundle on either side puts one item into the
-		// bundle instead of swapping; a right click swaps different items
-		// just the same without that.
-		ItemStack carried = menu.getCarried();
-		boolean swap = !carried.isEmpty()
-			&& slot.hasItem()
-			&& !ItemStack.isSameItemSameComponents(carried, slot.getItem());
-		client.gameMode.handleContainerInput(menu.containerId, slot.index, swap ? 1 : 0, ContainerInput.PICKUP, client.player);
+		client.gameMode.handleContainerInput(menu.containerId, slot.index, 0, ContainerInput.PICKUP, client.player);
+	}
+
+	/**
+	 * Whether clicking with or onto the stack can do something other than
+	 * pick up, place, or swap it, the way bundles and backpacks take in the
+	 * items clicked onto them.
+	 */
+	private static boolean hasClickBehaviour(ItemStack stack) {
+		return !stack.isEmpty() && CLICK_BEHAVIOUR.get(stack.getItem().getClass());
+	}
+
+	private static boolean overridesClicks(Class<?> type) {
+		try {
+			return type.getMethod(
+					"overrideStackedOnOther", ItemStack.class, Slot.class, ClickAction.class, Player.class
+				).getDeclaringClass() != Item.class
+				|| type.getMethod(
+					"overrideOtherStackedOnMe",
+					ItemStack.class,
+					ItemStack.class,
+					Slot.class,
+					ClickAction.class,
+					Player.class,
+					SlotAccess.class
+				).getDeclaringClass() != Item.class;
+		} catch (NoSuchMethodException exception) {
+			return true;
+		}
 	}
 
 	private static boolean matches(ItemStack stack, ItemStack want) {

@@ -66,6 +66,7 @@ public final class QuickStackClient {
 		nearby = new NearbyQuickStack(Minecraft.getInstance());
 		ContainerMemory.initialize();
 		ContainerHighlights.initialize();
+		StorageFetch.register();
 
 		ScreenEvents.AFTER_INIT.register(QuickStackClient::attach);
 		// Registered after the coordinator resets each tick, so an active run
